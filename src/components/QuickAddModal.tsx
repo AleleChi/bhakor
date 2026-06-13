@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { OOMSModule } from '../types';
+import { API_URL } from '../lib/api';
 
 interface QuickAddModalProps {
   moduleName: OOMSModule;
@@ -58,7 +59,7 @@ export default function QuickAddModal({ moduleName, onClose, onSuccess }: QuickA
         throw new Error("Equipment Name and SKU Number are required.");
       }
 
-      const res = await fetch('/api/add', {
+      const res = await fetch(`${API_URL}/api/add`, {
         method: 'POST',
         headers,
         body: JSON.stringify({

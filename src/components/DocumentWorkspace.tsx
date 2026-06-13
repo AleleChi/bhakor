@@ -37,6 +37,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { documentStorage, StorageMetadata } from '../lib/storageService';
+import { API_URL } from '../lib/api';
 
 interface FolderItem {
   id: string;
@@ -300,7 +301,7 @@ export default function DocumentWorkspace({ globalDept = '', globalLoc = '' }: D
     try {
       const token = localStorage.getItem('ooms_token');
       // Push transition step/audit to database
-      await fetch('/api/registry/transition', {
+      await fetch(`${API_URL}/api/registry/transition`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -502,7 +503,7 @@ export default function DocumentWorkspace({ globalDept = '', globalLoc = '' }: D
         }
 
         // Insert to NestJS database standard API
-        const res = await fetch('/api/add', {
+        const res = await fetch(`${API_URL}/api/add`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -717,7 +718,7 @@ export default function DocumentWorkspace({ globalDept = '', globalLoc = '' }: D
   const deleteDocumentExecution = async (id: string) => {
     const token = localStorage.getItem('ooms_token');
     try {
-      const res = await fetch('/api/registry/delete', {
+      const res = await fetch(`${API_URL}/api/registry/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -768,7 +769,7 @@ export default function DocumentWorkspace({ globalDept = '', globalLoc = '' }: D
       const token = localStorage.getItem('ooms_token');
       try {
         await Promise.all(selectedDocIds.map(async id => {
-          await fetch('/api/registry/delete', {
+          await fetch(`${API_URL}/api/registry/delete`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

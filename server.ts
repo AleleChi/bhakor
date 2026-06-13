@@ -27,7 +27,13 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   // Enable secure cross-origin queries
-  app.enableCors();
+  app.enableCors({
+    origin: [
+      'https://bhakor.vercel.app',
+      'http://localhost:5173'
+    ],
+    credentials: true
+  });
 
   // Register JSON and URL encoders on the native Express instance
   const expressApp = app.getHttpAdapter().getInstance();

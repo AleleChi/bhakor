@@ -47,6 +47,7 @@ import {
   Cell
 } from 'recharts';
 import { toast } from 'sonner';
+import { API_URL } from '../lib/api';
 
 function AnimatedCount({ value, label }: { value: string; label: string }) {
   const numericStr = value.replace(/[^0-9]/g, '');
@@ -552,7 +553,7 @@ export default function AuthFlow({ onLoginSuccess, darkMode, setDarkMode }: Auth
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const response = await fetch('/api/auth/upload-photo', {
+        const response = await fetch(`${API_URL}/api/auth/upload-photo`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -595,7 +596,7 @@ export default function AuthFlow({ onLoginSuccess, darkMode, setDarkMode }: Auth
   // Realtime invitation fetch effect
   useEffect(() => {
     if (token && token.length > 10 && view === 'invite') {
-      fetch(`/api/auth/invitation-details/${token}`)
+      fetch(`${API_URL}/api/auth/invitation-details/${token}`)
         .then(async (res) => {
           const data = await res.json();
           if (!res.ok) throw new Error(data.message || 'Verification endpoint rejection');
@@ -629,7 +630,7 @@ export default function AuthFlow({ onLoginSuccess, darkMode, setDarkMode }: Auth
     clearMessages();
 
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -669,7 +670,7 @@ export default function AuthFlow({ onLoginSuccess, darkMode, setDarkMode }: Auth
     clearMessages();
 
     try {
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -703,7 +704,7 @@ export default function AuthFlow({ onLoginSuccess, darkMode, setDarkMode }: Auth
     clearMessages();
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      const response = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword: password })
@@ -751,7 +752,7 @@ export default function AuthFlow({ onLoginSuccess, darkMode, setDarkMode }: Auth
     }
 
     try {
-      const response = await fetch('/api/auth/accept-invite', {
+      const response = await fetch(`${API_URL}/api/auth/accept-invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password, name, photoPath })

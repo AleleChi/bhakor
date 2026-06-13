@@ -5,6 +5,7 @@ import {
   Clock, Power, ChevronRight, Edit3, Trash2, ShieldCheck, Mail, UserX, Database, Fingerprint
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { API_URL } from '../lib/api';
 
 interface UserDetailsDrawerProps {
   user: any | null;
@@ -52,7 +53,7 @@ export default function UserDetailsDrawer({
     if (!user) return;
     setLoading(true);
     try {
-      const sessionsRes = await fetch(`/api/auth/users/${user.id}/sessions`, {
+      const sessionsRes = await fetch(`${API_URL}/api/auth/users/${user.id}/sessions`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (sessionsRes.ok) {
@@ -60,7 +61,7 @@ export default function UserDetailsDrawer({
         setSessions(sessionData || []);
       }
 
-      const auditRes = await fetch(`/api/auth/users/${user.id}/audit`, {
+      const auditRes = await fetch(`${API_URL}/api/auth/users/${user.id}/audit`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (auditRes.ok) {
@@ -83,7 +84,7 @@ export default function UserDetailsDrawer({
     }
 
     try {
-      const res = await fetch(`/api/auth/users/${user.id}/action`, {
+      const res = await fetch(`${API_URL}/api/auth/users/${user.id}/action`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ export default function UserDetailsDrawer({
     e.preventDefault();
     try {
       // Transfer department update
-      const res = await fetch(`/api/auth/users/${user.id}/action`, {
+      const res = await fetch(`${API_URL}/api/auth/users/${user.id}/action`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +146,7 @@ export default function UserDetailsDrawer({
 
   const terminateSession = async (sessionId: string) => {
     try {
-      const res = await fetch(`/api/auth/users/${user.id}/sessions/terminate`, {
+      const res = await fetch(`${API_URL}/api/auth/users/${user.id}/sessions/terminate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -168,7 +169,7 @@ export default function UserDetailsDrawer({
 
   const terminateAllSessions = async () => {
     try {
-      const res = await fetch(`/api/auth/users/${user.id}/sessions/terminate-all`, {
+      const res = await fetch(`${API_URL}/api/auth/users/${user.id}/sessions/terminate-all`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

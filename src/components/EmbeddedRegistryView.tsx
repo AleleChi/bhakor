@@ -41,6 +41,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { OOMSModule } from '../types';
+import { API_URL } from '../lib/api';
 
 interface EmbeddedRegistryViewProps {
   moduleName: string; // 'Correspondence' | 'Subscriptions' | 'Inventory' | 'Fuel' | 'Printer' | 'Documents' | 'AuditLogs'
@@ -104,7 +105,7 @@ export default function EmbeddedRegistryView({
 
     const token = localStorage.getItem('ooms_token');
     try {
-      const res = await fetch('/api/registry/delete', {
+      const res = await fetch(`${API_URL}/api/registry/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -418,7 +419,7 @@ export default function EmbeddedRegistryView({
   const handleAssignAction = async (itemId: string, departmentName: string, label: string) => {
     const token = localStorage.getItem('ooms_token');
     try {
-      const res = await fetch('/api/registry/assign', {
+      const res = await fetch(`${API_URL}/api/registry/assign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -450,7 +451,7 @@ export default function EmbeddedRegistryView({
   const handleTransitionAction = async (itemId: string, statusName: string, label: string) => {
     const token = localStorage.getItem('ooms_token');
     try {
-      const res = await fetch('/api/registry/transition', {
+      const res = await fetch(`${API_URL}/api/registry/transition`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

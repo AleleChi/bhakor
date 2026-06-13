@@ -60,6 +60,7 @@ import PrintersDashboardView from './components/PrintersDashboardView';
 import DocumentWorkspace from './components/DocumentWorkspace';
 import CorrespondenceWorkspace from './components/CorrespondenceWorkspace';
 import { DashboardSummary, OOMSModule, ExecutiveInsight } from './types';
+import { API_URL } from './lib/api';
 
 const THEME_VARIABLES: Record<string, Record<string, string>> = {
   slate: {
@@ -223,7 +224,7 @@ export default function App() {
     queryKey: ['notificationsList', token],
     queryFn: async () => {
       if (!token) return [];
-      const res = await fetch('/api/notifications', {
+      const res = await fetch(`${API_URL}/api/notifications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) return [];
@@ -239,7 +240,7 @@ export default function App() {
 
   const handleMarkNotificationRead = async (id: string) => {
     if (!token) return;
-    const res = await fetch(`/api/notifications/${id}/read`, {
+    const res = await fetch(`${API_URL}/api/notifications/${id}/read`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -250,7 +251,7 @@ export default function App() {
 
   const handleClearAllNotifications = async () => {
     if (!token) return;
-    const res = await fetch('/api/notifications/read-all', {
+    const res = await fetch(`${API_URL}/api/notifications/read-all`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -266,7 +267,7 @@ export default function App() {
     queryKey: ['adminRolesList', token],
     queryFn: async () => {
       if (!token) return [];
-      const res = await fetch('/api/auth/roles', {
+      const res = await fetch(`${API_URL}/api/auth/roles`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) return [];
@@ -279,7 +280,7 @@ export default function App() {
     queryKey: ['adminPermissionsList', token],
     queryFn: async () => {
       if (!token) return [];
-      const res = await fetch('/api/auth/permissions', {
+      const res = await fetch(`${API_URL}/api/auth/permissions`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) return [];
@@ -296,7 +297,7 @@ export default function App() {
     if (!token || !editingRole) return;
     setIsUpdatingRole(true);
     try {
-      const res = await fetch(`/api/auth/roles/${editingRole.id}`, {
+      const res = await fetch(`${API_URL}/api/auth/roles/${editingRole.id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -379,7 +380,7 @@ export default function App() {
         page: '1',
         limit: '100'
       });
-      const res = await fetch(`/api/auth/users?${query.toString()}`, {
+      const res = await fetch(`${API_URL}/api/auth/users?${query.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -406,7 +407,7 @@ export default function App() {
   const handleAdminExecuteBulkAction = async (action: string, selectedIds: string[], extraData?: any) => {
     if (!token) return;
     try {
-      const res = await fetch('/api/auth/users/bulk-action', {
+      const res = await fetch(`${API_URL}/api/auth/users/bulk-action`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -435,7 +436,7 @@ export default function App() {
     if (!token) return;
     setProfileIsLoading(true);
     try {
-      const res = await fetch(`/api/auth/profile/me`, {
+      const res = await fetch(`${API_URL}/api/auth/profile/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -454,7 +455,7 @@ export default function App() {
   const fetchProfileSessions = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/auth/profile/sessions`, {
+      const res = await fetch(`${API_URL}/api/auth/profile/sessions`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -469,7 +470,7 @@ export default function App() {
   const fetchProfileLogs = async () => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/auth/profile/logs?page=${profileLogsPage}&limit=10`, {
+      const res = await fetch(`${API_URL}/api/auth/profile/logs?page=${profileLogsPage}&limit=10`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -500,7 +501,7 @@ export default function App() {
     const reader = new FileReader();
     reader.onload = async () => {
       try {
-        const response = await fetch('/api/auth/upload-photo', {
+        const response = await fetch(`${API_URL}/api/auth/upload-photo`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -528,7 +529,7 @@ export default function App() {
     e.preventDefault();
     if (!token) return;
     try {
-      const res = await fetch('/api/auth/profile/update', {
+      const res = await fetch(`${API_URL}/api/auth/profile/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -575,7 +576,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch('/api/auth/profile/password', {
+      const res = await fetch(`${API_URL}/api/auth/profile/password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -602,7 +603,7 @@ export default function App() {
   const handleRevokeSession = async (sessionId: string) => {
     if (!token) return;
     try {
-      const res = await fetch(`/api/auth/profile/sessions/${sessionId}/revoke`, {
+      const res = await fetch(`${API_URL}/api/auth/profile/sessions/${sessionId}/revoke`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -637,7 +638,7 @@ export default function App() {
     e.preventDefault();
     if (!token) return;
     try {
-      const res = await fetch('/api/auth/users/invite', {
+      const res = await fetch(`${API_URL}/api/auth/users/invite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -698,7 +699,7 @@ export default function App() {
         actionStr = 'REVOKE';
       }
 
-      const res = await fetch(`/api/auth/users/${adminSelectedUserObj.id}/action`, {
+      const res = await fetch(`${API_URL}/api/auth/users/${adminSelectedUserObj.id}/action`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -743,7 +744,7 @@ export default function App() {
         'Authorization': `Bearer ${token}`
       };
 
-      const res = await fetch(`/api/summary?${filters.toString()}`, { headers });
+      const res = await fetch(`${API_URL}/api/summary?${filters.toString()}`, { headers });
       if (!res.ok) {
         throw new Error("Enterprise summary retrieval failed. Secure portal offline.");
       }
@@ -761,7 +762,7 @@ export default function App() {
         'Authorization': `Bearer ${token}`
       };
 
-      const res = await fetch(`/api/dashboard/analytics`, { headers });
+      const res = await fetch(`${API_URL}/api/dashboard/analytics`, { headers });
       if (!res.ok) {
         throw new Error("Analytics retrieval failed.");
       }
@@ -804,7 +805,7 @@ export default function App() {
       const headers: any = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch('/api/resolve-alert', {
+      const res = await fetch(`${API_URL}/api/resolve-alert`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ alertId })
@@ -829,7 +830,7 @@ export default function App() {
       const headers: any = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch('/api/complete-task', {
+      const res = await fetch(`${API_URL}/api/complete-task`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ taskId })
@@ -853,7 +854,7 @@ export default function App() {
       const headers: any = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const res = await fetch('/api/insights/generate', {
+      const res = await fetch(`${API_URL}/api/insights/generate`, {
         method: 'POST',
         headers
       });

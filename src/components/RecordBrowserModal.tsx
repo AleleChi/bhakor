@@ -18,6 +18,7 @@ import {
   FileText
 } from 'lucide-react';
 import { OOMSModule } from '../types';
+import { API_URL } from '../lib/api';
 
 interface RecordBrowserModalProps {
   initialModule: string;
@@ -76,7 +77,7 @@ export default function RecordBrowserModal({
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const res = await fetch(`/api/list?${query.toString()}`, { headers });
+        const res = await fetch(`${API_URL}/api/list?${query.toString()}`, { headers });
         const result = await res.json();
         
         setRecords(result.data || []);

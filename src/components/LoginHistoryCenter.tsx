@@ -4,6 +4,7 @@ import {
   Computer, Globe, Clock, SlidersHorizontal, ArrowUpDown, FileDown
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { API_URL } from '../lib/api';
 
 interface LoginHistoryCenterProps {
   token: string;
@@ -25,7 +26,7 @@ export default function LoginHistoryCenter({ token }: LoginHistoryCenterProps) {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/login-history', {
+      const res = await fetch(`${API_URL}/api/auth/login-history`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
