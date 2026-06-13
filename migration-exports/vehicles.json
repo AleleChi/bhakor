@@ -1,0 +1,57 @@
+[
+  {
+    "id": "ad6c71a5-80e7-4e4e-a7ae-8e65b14ce7a0",
+    "name": "Ford Ranger Double Cab",
+    "plate": "KCA 401A",
+    "type": "Utility",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.972Z",
+    "updatedAt": "2026-06-11T22:30:35.972Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "16c85d13-9fca-4b99-9002-0f704a8710aa",
+    "name": "Toyota Hilux Pickup",
+    "plate": "KCE 982B",
+    "type": "Logistics",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.973Z",
+    "updatedAt": "2026-06-11T22:30:35.973Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "aa3476bb-e981-4429-95bc-0f95b9c347f2",
+    "name": "Isuzu D-Max",
+    "plate": "KCH 102C",
+    "type": "Field Services",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.974Z",
+    "updatedAt": "2026-06-11T22:30:35.974Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "22689040-1628-4d2f-8660-97556ffe0f6c",
+    "name": "Toyota Hiace Ambulance",
+    "plate": "KCP 554D",
+    "type": "Emergency",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.975Z",
+    "updatedAt": "2026-06-11T22:30:35.975Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "4e5cffa9-166c-4d09-8b4d-50daf156ad39",
+    "name": "Heavy Carrier Truck",
+    "plate": "KDB 012F",
+    "type": "Heavy Cargo",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.976Z",
+    "updatedAt": "2026-06-11T22:30:35.976Z",
+    "deletedAt": null,
+    "deletedBy": null
+  }
+]

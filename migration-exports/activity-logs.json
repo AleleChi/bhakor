@@ -1,0 +1,26 @@
+[
+  {
+    "id": "acd3b487-2fd8-4881-9799-df52109fa0a7",
+    "user": "Sarah Jenkins",
+    "action": "Uploaded Document: Procurement_Policy_Update_2026.pdf",
+    "module": "Documents",
+    "timestamp": "5 min ago",
+    "createdAt": "2026-06-11T22:30:36.627Z"
+  },
+  {
+    "id": "4f418cdc-3c05-43f4-be35-39f3e144ea8f",
+    "user": "Alex Rivera",
+    "action": "Approved Correspondence COR-10255 incoming from Ministry of Finance",
+    "module": "Correspondence",
+    "timestamp": "14 min ago",
+    "createdAt": "2026-06-11T22:30:36.628Z"
+  },
+  {
+    "id": "8163d441-5161-4b52-858a-6cef90bb0c11",
+    "user": "Michael Chang",
+    "action": "Logged Fleet Fuel Dispatch for vehicle KCA 401A (45 Liters @ Rubis)",
+    "module": "Fuel",
+    "timestamp": "48 min ago",
+    "createdAt": "2026-06-11T22:30:36.629Z"
+  }
+]

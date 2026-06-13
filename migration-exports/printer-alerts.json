@@ -1,0 +1,146 @@
+[
+  {
+    "id": "454e4cf0-cf22-4d6c-86f8-6b0553f5e76a",
+    "printerId": "2ecb83dc-1ca1-4a0c-8969-4ff45816e531",
+    "type": "Low Toner",
+    "message": "Office Printer - Floor 1 toner level is critical (10%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.487Z"
+  },
+  {
+    "id": "98e44ff5-89c1-4802-b12a-206a9579c6e4",
+    "printerId": "2ecb83dc-1ca1-4a0c-8969-4ff45816e531",
+    "type": "Paper Low",
+    "message": "Office Printer - Floor 1 paper stock level is very low (20%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.488Z"
+  },
+  {
+    "id": "bb568e38-a58d-4e39-8f67-618039554d2a",
+    "printerId": "2ecb83dc-1ca1-4a0c-8969-4ff45816e531",
+    "type": "Maintenance Required",
+    "message": "Office Printer - Floor 1 requires immediate maintenance kit replenishment.",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.489Z"
+  },
+  {
+    "id": "88223d2b-2cf8-446c-9488-f6a5d1384f94",
+    "printerId": "be78ad80-1f56-45e4-a04e-ee02fec00e23",
+    "type": "Paper Low",
+    "message": "Office Printer - Floor 1 paper stock level is very low (33%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.492Z"
+  },
+  {
+    "id": "b26eb4aa-1d0e-4718-9f78-179feb0c631b",
+    "printerId": "a17a40b3-c378-4b43-b389-f1871121a625",
+    "type": "Maintenance Required",
+    "message": "Office Printer - Floor 2 requires immediate maintenance kit replenishment.",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.503Z"
+  },
+  {
+    "id": "7ce87c11-524a-4350-a7b5-9ceb0f392a02",
+    "printerId": "0d3f19c1-14ed-4e1c-a687-64124b43b424",
+    "type": "Paper Low",
+    "message": "Office Printer - Floor 2 paper stock level is very low (20%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.506Z"
+  },
+  {
+    "id": "1c10ff81-c4f0-4ebc-a7ae-17d6e72322d8",
+    "printerId": "cf1167f5-38f4-4c9b-baba-66c51e634451",
+    "type": "Offline Device",
+    "message": "Printer Office Printer - Floor 3 IP 192.168.10.18 is offline.",
+    "severity": "high",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.509Z"
+  },
+  {
+    "id": "6fa964b4-6033-4965-8546-a8dfa3be0220",
+    "printerId": "cf1167f5-38f4-4c9b-baba-66c51e634451",
+    "type": "Paper Low",
+    "message": "Office Printer - Floor 3 paper stock level is very low (33%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.510Z"
+  },
+  {
+    "id": "f46fbc39-220e-4fd1-bd43-f1f0a7104c9a",
+    "printerId": "2f2ecd42-edb1-4446-a89a-780fbaf88350",
+    "type": "Low Toner",
+    "message": "Office Printer - Floor 3 toner level is critical (10%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.513Z"
+  },
+  {
+    "id": "0490e049-7798-45ce-8e7a-93b0760832cd",
+    "printerId": "0b626eeb-c67d-4a35-b6e7-d6ec0e66cd73",
+    "type": "Paper Jam",
+    "message": "Office Printer - Floor 4 has a mechanical paper obstruction in slot 2.",
+    "severity": "high",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.520Z"
+  },
+  {
+    "id": "5f032908-ccbb-4758-a5fe-dc399337e876",
+    "printerId": "0b626eeb-c67d-4a35-b6e7-d6ec0e66cd73",
+    "type": "Maintenance Required",
+    "message": "Office Printer - Floor 4 requires immediate maintenance kit replenishment.",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.521Z"
+  },
+  {
+    "id": "d7b9e416-e361-4345-a4db-f34bac64b81c",
+    "printerId": "4ada077a-df7f-4da4-916f-275f842ddc86",
+    "type": "Paper Low",
+    "message": "Office Printer - Floor 4 paper stock level is very low (20%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.526Z"
+  },
+  {
+    "id": "6306048e-6b36-4551-a21b-2f0b6acf21e6",
+    "printerId": "27b16d4f-bcda-4339-8796-9de948b3a293",
+    "type": "Paper Low",
+    "message": "Office Printer - Floor 4 paper stock level is very low (33%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.529Z"
+  },
+  {
+    "id": "c799181e-ca97-403f-84d8-858ccbcf1062",
+    "printerId": "ca1b381d-922f-4bf4-ab21-619e413a309a",
+    "type": "Offline Device",
+    "message": "Printer Office Printer - Floor 5 IP 192.168.10.26 is offline.",
+    "severity": "high",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.532Z"
+  },
+  {
+    "id": "b4883d80-8c50-479d-8de9-3c7fd1654f22",
+    "printerId": "162e363a-692b-4d2e-8cee-124b34d4cd72",
+    "type": "Low Toner",
+    "message": "Office Printer - Floor 5 toner level is critical (10%).",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.537Z"
+  },
+  {
+    "id": "64f00f6d-1a25-48b5-ac4a-559c9e89172b",
+    "printerId": "162e363a-692b-4d2e-8cee-124b34d4cd72",
+    "type": "Maintenance Required",
+    "message": "Office Printer - Floor 5 requires immediate maintenance kit replenishment.",
+    "severity": "medium",
+    "resolved": false,
+    "createdAt": "2026-06-11T22:30:36.538Z"
+  }
+]

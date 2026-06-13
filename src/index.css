@@ -1,0 +1,390 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-primary: #F59E0B;
+  --color-primary-hover: #D97706;
+  --color-background-brand: #F8FAFC;
+  --color-surface-brand: #FFFFFF;
+  --color-surface-hover: #F1F5F9;
+  --color-text-primary-brand: #0F172A;
+  --color-text-secondary-brand: #64748B;
+  --color-border-brand: #E2E8F0;
+  --color-success-brand: #10B981;
+  --color-warning-brand: #F59E0B;
+  --color-danger-brand: #EF4444;
+  --color-info-brand: #3B82F6;
+}
+
+/* OOMS DESIGN SYSTEM DEFINITIONS */
+
+/* Centralized Card Rules */
+.ooms-card {
+  background-color: var(--color-surface-brand) !important;
+  border: 1px solid var(--color-border-brand) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.03) !important;
+  transition: transform 200ms ease-in-out, box-shadow 200ms ease-in-out, border-color 200ms ease !important;
+}
+
+.ooms-card-hover:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Centralized Interactive Elements */
+.ooms-interactive {
+  background-color: var(--color-surface-brand) !important;
+  color: var(--color-text-primary-brand) !important;
+  border: 1px solid var(--color-border-brand) !important;
+  transition: all 150ms ease-in-out !important;
+}
+
+.ooms-interactive:hover {
+  background-color: var(--color-surface-hover) !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+.ooms-interactive.active, .ooms-interactive:active {
+  background-color: #FFF7ED !important;
+  color: #D97706 !important;
+  border-color: #F59E0B !important;
+}
+
+/* Centralized Button Rules */
+.ooms-btn-primary {
+  background-color: #F59E0B !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  transition: all 180ms ease !important;
+  border: 1px solid transparent !important;
+}
+
+.ooms-btn-primary:hover:not(:disabled) {
+  background-color: #D97706 !important;
+}
+
+.ooms-btn-secondary {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+  transition: all 180ms ease !important;
+}
+
+.ooms-btn-secondary:hover:not(:disabled) {
+  background-color: #F8FAFC !important;
+  border-color: #F59E0B !important;
+}
+
+.ooms-btn-danger {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+  transition: all 180ms ease !important;
+  border: 1px solid transparent !important;
+}
+
+.ooms-btn-danger:hover:not(:disabled) {
+  background-color: #DC2626 !important;
+}
+
+/* Table Systems Row Hover */
+.ooms-table-row {
+  transition: all 200ms ease !important;
+  cursor: pointer !important;
+  height: 64px !important;
+}
+
+.ooms-table-row:hover {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  color: #0F172A !important;
+}
+
+.ooms-table-row td {
+  color: #0F172A !important;
+}
+
+.ooms-table-row td.text-slate-500, .ooms-table-row td .text-slate-500 {
+  color: #64748B !important;
+}
+
+.ooms-table-row-selected {
+  background-color: #FFF7ED !important;
+  border-left: 4px solid var(--color-primary) !important;
+}
+
+/* OOMS Table Containers */
+.ooms-table-container {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02) !important;
+  overflow: hidden !important;
+}
+
+/* Unified Table Header */
+.ooms-table-head-th {
+  background-color: #0F172A !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  height: 56px !important;
+  text-transform: uppercase !important;
+  font-size: 11px !important;
+  border-bottom: 2px solid #E5E7EB !important;
+}
+
+/* Unified Status Badges System */
+.ooms-status-badge {
+  height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  white-space: nowrap !important;
+  line-height: normal !important;
+}
+
+.ooms-badge-in-transit, .ooms-badge-processing, .ooms-badge-in-progress, .ooms-badge-pending-review, .ooms-badge-expiring, .ooms-badge-low-stock, .ooms-badge-low-toner, .ooms-badge-submitted, .ooms-badge-warning {
+  background-color: #FEF3C7 !important;
+  color: #92400E !important;
+}
+
+.ooms-badge-delivered, .ooms-badge-approved, .ooms-badge-active, .ooms-badge-in-stock, .ooms-badge-online, .ooms-badge-success {
+  background-color: #DCFCE7 !important;
+  color: #166534 !important;
+}
+
+.ooms-badge-rejected, .ooms-badge-expired, .ooms-badge-out-of-stock, .ooms-badge-offline, .ooms-badge-flagged, .ooms-badge-returned, .ooms-badge-danger {
+  background-color: #FEE2E2 !important;
+  color: #991B1B !important;
+}
+
+.ooms-badge-draft, .ooms-badge-archived, .ooms-badge-neutral {
+  background-color: #F1F5F9 !important;
+  color: #475569 !important;
+}
+
+/* Unified Notifications System */
+.ooms-notification-unread {
+  border-left: 3px solid #F59E0B !important;
+  border-top-left-radius: 4px !important;
+  border-bottom-left-radius: 4px !important;
+  background-color: rgba(245, 158, 11, 0.04) !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
+  transition: all 180ms ease !important;
+}
+
+.ooms-notification-unread:hover {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+}
+
+.ooms-notification-read {
+  border-left: 3px solid transparent !important;
+  background-color: #F8FAFC !important;
+  color: #64748B !important;
+  font-weight: 400 !important;
+  transition: all 180ms ease !important;
+}
+
+.ooms-notification-read:hover {
+  background-color: #F1F5F9 !important;
+}
+
+/* Standardized Search + Filter Input Focus */
+.ooms-filter-input {
+  background-color: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  transition: all 180ms ease !important;
+}
+
+.ooms-filter-input:focus {
+  border-color: #F59E0B !important;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15) !important;
+  outline: none !important;
+}
+
+/* Unified Pagination Buttons */
+.ooms-pagination-btn {
+  background-color: #FFFFFF !important;
+  color: #475569 !important;
+  border: 1px solid #E5E7EB !important;
+  border-radius: 10px !important;
+  padding: 6px 14px !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  transition: all 180ms ease !important;
+  cursor: pointer !important;
+}
+
+.ooms-pagination-btn:hover:not(:disabled) {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-color: #F59E0B !important;
+  color: #0F172A !important;
+}
+
+.ooms-pagination-btn-active {
+  background-color: #F59E0B !important;
+  color: #FFFFFF !important;
+  border-color: #F59E0B !important;
+  border-radius: 10px !important;
+  padding: 6px 14px !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+}
+
+.ooms-interactive-element {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  color: #0F172A;
+  transition: all 180ms ease;
+}
+
+.ooms-interactive-element:hover {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-color: #F59E0B !important;
+  color: #0F172A !important;
+}
+
+/* Centralized Command typography rules */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+body {
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* Base style resets and keyboard accessible focus rings */
+:root {
+  --primary-amber: #F59E0B;
+  --sidebar-slate: #0F172A;
+  --border-default: #E5E7EB;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+}
+
+/* DESIGN TOKENS */
+.page-title {
+  color: #0F172A !important;
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.page-desc {
+  color: #64748B !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+
+.section-title {
+  color: #0F172A !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+}
+
+.card-title {
+  color: #0F172A !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+.body-text {
+  color: #334155 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.caption-text {
+  color: #64748B !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+/* Color Tokens Helper Classes */
+.text-primary-amber { color: var(--primary-amber) !important; }
+.bg-primary-amber { background-color: var(--primary-amber) !important; }
+.text-sidebar-slate { color: var(--sidebar-slate) !important; }
+.bg-sidebar-slate { background-color: var(--sidebar-slate) !important; }
+.border-default { border-color: var(--border-default) !important; }
+.text-primary { color: var(--text-primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Elegant custom scrollbar for extreme lists */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate-400);
+}
+
+/* Sidebar Button Hover Style overrides targeting correct brand color language */
+.sidebar-btn-hover {
+  transition: all 150ms ease-in-out;
+}
+.sidebar-btn-hover:hover {
+  background-color: #FFF7ED !important;
+  color: #0F172A !important;
+}
+.sidebar-btn-hover:hover span,
+.sidebar-btn-hover:hover svg {
+  color: #F59E0B !important;
+}
+
+.hover-sidebar-opaque {
+  transition: all 150ms ease-in-out;
+}
+.hover-sidebar-opaque:hover {
+  background-color: #FFF7ED !important;
+  color: #F59E0B !important;
+  border-color: #E5E7EB !important;
+}
+
+/* Elite SaaS fade-in animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+

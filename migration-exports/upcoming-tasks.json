@@ -1,0 +1,54 @@
+[
+  {
+    "id": "1224a794-82ff-449d-89db-6b100e6dcf07",
+    "task": "Review subscription licenses for Slack Pro Workspace tier change",
+    "dueDate": "2026-06-13",
+    "owner": "Michael Chang",
+    "module": "Subscriptions",
+    "priority": "critical",
+    "status": "pending",
+    "createdAt": "2026-06-11T22:30:36.624Z",
+    "updatedAt": "2026-06-11T22:30:36.624Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "f1193a6c-6801-4313-83de-bb7fd05cb92e",
+    "task": "Replenish dry erase marker inventory in Annex Building",
+    "dueDate": "2026-06-15",
+    "owner": "Michael Chang",
+    "module": "Inventory",
+    "priority": "medium",
+    "status": "pending",
+    "createdAt": "2026-06-11T22:30:36.625Z",
+    "updatedAt": "2026-06-11T22:30:36.625Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "b3342657-8730-4a6b-bc45-02e20deb8eda",
+    "task": "Dispatch physical correspondence files to Ministry of Transport",
+    "dueDate": "2026-06-12",
+    "owner": "Sarah Jenkins",
+    "module": "Correspondence",
+    "priority": "high",
+    "status": "pending",
+    "createdAt": "2026-06-11T22:30:36.626Z",
+    "updatedAt": "2026-06-11T22:30:36.626Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "72b58332-fcd4-4f7e-90c3-8a2ef3d4ad96",
+    "task": "Verify fuel logs for Vehicle KX-OOMS-01 previous travel log",
+    "dueDate": "2026-06-16",
+    "owner": "Alex Rivera",
+    "module": "Fuel",
+    "priority": "low",
+    "status": "in-progress",
+    "createdAt": "2026-06-11T22:30:36.627Z",
+    "updatedAt": "2026-06-11T22:30:36.627Z",
+    "deletedAt": null,
+    "deletedBy": null
+  }
+]

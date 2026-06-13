@@ -1,0 +1,68 @@
+[
+  {
+    "id": "06c0a2f7-3353-41b7-958b-ddd5a774f455",
+    "severity": "critical",
+    "module": "Subscriptions",
+    "message": "Corporate Microsoft 365 Agreement is expiring in 5 days (Critical Licensing Risk)",
+    "date": "12m ago",
+    "actionLabel": "Renew Now",
+    "actionType": "RENEW",
+    "createdAt": "2026-06-11T22:30:36.619Z",
+    "updatedAt": "2026-06-11T22:30:36.619Z"
+  },
+  {
+    "id": "83ac71e1-4c73-4270-b6b1-92cecb9f9044",
+    "severity": "critical",
+    "module": "Documents",
+    "message": "Restricted document \"Confidential_Financial_Forecast_Q3_2026.zip\" uploaded by unauthorized staff from Main Reception IP",
+    "date": "34m ago",
+    "actionLabel": "Quarantine",
+    "actionType": "QUARANTINE",
+    "createdAt": "2026-06-11T22:30:36.620Z",
+    "updatedAt": "2026-06-11T22:30:36.620Z"
+  },
+  {
+    "id": "1aa34d2c-a7a0-495a-a336-7d486cb7e6f2",
+    "severity": "high",
+    "module": "Inventory",
+    "message": "Stock levels of HP LaserJet Toner Cartridge below threshold (12 Cartridges left, average consumption 8/week)",
+    "date": "2h ago",
+    "actionLabel": "Procure",
+    "actionType": "PROCURE",
+    "createdAt": "2026-06-11T22:30:36.621Z",
+    "updatedAt": "2026-06-11T22:30:36.621Z"
+  },
+  {
+    "id": "f3fd77e9-62cc-4353-b8fe-0dd8bd05b882",
+    "severity": "high",
+    "module": "Printer",
+    "message": "Abnormal toner exhaustion rate: Unit (HQ Annex Floor 2 Kyocera) dropped 60% in 48 hours",
+    "date": "4h ago",
+    "actionLabel": "Diagnostics",
+    "actionType": "DIAGNOSTICS",
+    "createdAt": "2026-06-11T22:30:36.622Z",
+    "updatedAt": "2026-06-11T22:30:36.622Z"
+  },
+  {
+    "id": "98982998-550c-4088-9db9-3ddf658cc324",
+    "severity": "medium",
+    "module": "Fuel",
+    "message": "Fuel volume anomaly registered representing a cost spike for driver David K. on Vehicle KCE 982B",
+    "date": "1d ago",
+    "actionLabel": "Audit Logs",
+    "actionType": "AUDIT_FUEL",
+    "createdAt": "2026-06-11T22:30:36.622Z",
+    "updatedAt": "2026-06-11T22:30:36.622Z"
+  },
+  {
+    "id": "7182ad96-14c9-4b96-9607-0491f5584d23",
+    "severity": "low",
+    "module": "Correspondence",
+    "message": "Outgoing Mail COR-11503 to Customs Office returned: Address unverified by carrier",
+    "date": "2d ago",
+    "actionLabel": "Resubscribe",
+    "actionType": "RESOLVE_MAIL",
+    "createdAt": "2026-06-11T22:30:36.623Z",
+    "updatedAt": "2026-06-11T22:30:36.623Z"
+  }
+]

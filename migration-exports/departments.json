@@ -1,0 +1,74 @@
+[
+  {
+    "id": "5f8c85ed-ac7a-4569-8776-b1c5226d439e",
+    "name": "Logistics",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.962Z",
+    "updatedAt": "2026-06-11T22:30:35.962Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "18bba629-a47c-4ea6-9494-602ab70e733f",
+    "name": "Finance",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.964Z",
+    "updatedAt": "2026-06-11T22:30:35.964Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "b9a9a690-3d48-4624-a681-7ce2e610466d",
+    "name": "Human Resources",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.965Z",
+    "updatedAt": "2026-06-11T22:30:35.965Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "490b45c4-11db-4a4f-9e1f-8640773bb60f",
+    "name": "Operations",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.966Z",
+    "updatedAt": "2026-06-11T22:30:35.966Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "9861b3bc-92a2-485c-85d8-2b007716d26d",
+    "name": "Executive Office",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.967Z",
+    "updatedAt": "2026-06-11T22:30:35.967Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "2866191b-77a6-468a-8115-df89ec7e181a",
+    "name": "Legal",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.968Z",
+    "updatedAt": "2026-06-11T22:30:35.968Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "c130f09a-f80d-40a2-a998-8525dd415e53",
+    "name": "IT Support",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.969Z",
+    "updatedAt": "2026-06-11T22:30:35.969Z",
+    "deletedAt": null,
+    "deletedBy": null
+  },
+  {
+    "id": "86d01c03-513a-49a9-8517-eaae3ebf1a3b",
+    "name": "Procurement",
+    "organizationId": "a4370f9d-3f33-4e5c-aad5-b2029e5cff41",
+    "createdAt": "2026-06-11T22:30:35.971Z",
+    "updatedAt": "2026-06-11T22:30:35.971Z",
+    "deletedAt": null,
+    "deletedBy": null
+  }
+]

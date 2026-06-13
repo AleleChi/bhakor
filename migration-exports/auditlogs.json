@@ -1,0 +1,57 @@
+[
+  {
+    "id": "2406362e-89ba-4885-b559-bc77529e44c0",
+    "userId": "5b079f98-5152-4829-a52a-1bc363467a9d",
+    "action": "LOGIN",
+    "module": "Auth",
+    "timestamp": "2026-06-11T19:30:36.739Z",
+    "entityId": "5b079f98-5152-4829-a52a-1bc363467a9d",
+    "entityType": "User",
+    "oldValues": null,
+    "newValues": "{\"email\":\"superadmin@ooms.com\",\"name\":\"Alex Rivera\",\"role\":\"SUPER_ADMIN\"}"
+  },
+  {
+    "id": "24a5b8a6-1be1-49b4-a793-4c1de349cf71",
+    "userId": "5b079f98-5152-4829-a52a-1bc363467a9d",
+    "action": "CREATE",
+    "module": "Correspondence",
+    "timestamp": "2026-06-11T20:00:36.739Z",
+    "entityId": "c1",
+    "entityType": "Correspondence",
+    "oldValues": null,
+    "newValues": "{\"trackingNumber\":\"TRK-984210\",\"sender\":\"Ministry of Finance Nigeria\",\"subject\":\"Budget approval requisition block\"}"
+  },
+  {
+    "id": "dc69c4b6-90ab-408a-a5fa-023b3a39cce2",
+    "userId": "5b079f98-5152-4829-a52a-1bc363467a9d",
+    "action": "APPROVAL",
+    "module": "Correspondence",
+    "timestamp": "2026-06-11T20:30:36.739Z",
+    "entityId": "c1",
+    "entityType": "Correspondence",
+    "oldValues": "{\"status\":\"Draft\"}",
+    "newValues": "{\"status\":\"Submitted\",\"remarks\":\"First pass draft completed by director.\"}"
+  },
+  {
+    "id": "ad1c0f05-507e-4f10-9a79-f2964bf82b44",
+    "userId": "5b079f98-5152-4829-a52a-1bc363467a9d",
+    "action": "ASSIGNMENT",
+    "module": "Correspondence",
+    "timestamp": "2026-06-11T21:00:36.739Z",
+    "entityId": "c1",
+    "entityType": "Correspondence",
+    "oldValues": "{\"assignedDepartment\":\"Operations\"}",
+    "newValues": "{\"assignedDepartment\":\"Finance\"}"
+  },
+  {
+    "id": "21a92d7c-0b1e-432e-9e57-402d3c1524ec",
+    "userId": "5b079f98-5152-4829-a52a-1bc363467a9d",
+    "action": "UPDATE",
+    "module": "Inventory",
+    "timestamp": "2026-06-11T21:30:36.739Z",
+    "entityId": "i1",
+    "entityType": "InventoryItem",
+    "oldValues": "{\"stock\":5}",
+    "newValues": "{\"stock\":350}"
+  }
+]

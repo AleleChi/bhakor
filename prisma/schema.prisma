@@ -1,0 +1,419 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id              String           @id @default(uuid())
+  name            String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  deletedBy       String?
+  correspondences Correspondence[]
+  departments     Department[]
+  documents       Document[]
+  inventoryItems  InventoryItem[]
+  printers        Printer[]
+  subscriptions   Subscription[]
+  users           User[]
+  vehicles        Vehicle[]
+}
+
+model Department {
+  id              String           @id @default(uuid())
+  name            String
+  organizationId  String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  deletedAt       DateTime?
+  deletedBy       String?
+  correspondences Correspondence[]
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  printers        Printer[]
+  subscriptions   Subscription[]
+}
+
+model User {
+  id              String                 @id @default(uuid())
+  email           String                 @unique
+  passwordHash    String
+  name            String
+  role            RoleEnum               @default(VIEWER)
+  organizationId  String
+  invitationToken String?                @unique
+  status          String                 @default("ACTIVE")
+  photoPath       String?
+  lastLogin       DateTime?
+  failedAttempts  Int                    @default(0)
+  lockoutEnd      DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  deletedAt       DateTime?
+  deletedBy       String?
+  auditLogs       AuditLog[]
+  documents       Document[]
+  transactions    InventoryTransaction[]
+  organization    Organization           @relation(fields: [organizationId], references: [id])
+  sessions        UserSession[]
+  printJobs       PrintJob[]
+}
+
+model UserSession {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  device       String?
+  ip           String?
+  browser      String?
+  location     String?
+  lastActivity DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Correspondence {
+  id             String       @id @default(uuid())
+  trackingNumber String
+  sender         String
+  recipient      String
+  subject        String
+  status         String
+  type           String
+  date           DateTime     @default(now())
+  departmentId   String
+  location       String
+  organizationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  archivedAt     DateTime?
+  archivedBy     String?
+  deletedAt      DateTime?
+  deletedBy      String?
+  createdBy      String?
+  department     Department   @relation(fields: [departmentId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Subscription {
+  id             String               @id @default(uuid())
+  serviceName    String
+  provider       String
+  cost           Float
+  status         String
+  dueDate        String
+  billingCycle   String
+  departmentId   String
+  ownerId        String
+  autoRenew      Boolean              @default(true)
+  category       SubscriptionCategory @default(SOFTWARE)
+  organizationId String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  deletedAt      DateTime?
+  deletedBy      String?
+  department     Department           @relation(fields: [departmentId], references: [id])
+  organization   Organization         @relation(fields: [organizationId], references: [id])
+}
+
+model InventoryItem {
+  id             String                 @id @default(uuid())
+  itemName       String
+  sku            String                 @unique
+  category       String
+  stock          Int                    @default(0)
+  minThreshold   Int                    @default(0)
+  unit           String
+  location       String
+  status         String
+  organizationId String
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  deletedAt      DateTime?
+  deletedBy      String?
+  organization   Organization           @relation(fields: [organizationId], references: [id])
+  transactions   InventoryTransaction[]
+}
+
+model InventoryTransaction {
+  id          String        @id @default(uuid())
+  itemId      String
+  type        String
+  quantity    Int
+  description String
+  timestamp   DateTime      @default(now())
+  operatorId  String
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+  operator    User          @relation(fields: [operatorId], references: [id])
+}
+
+model Vehicle {
+  id             String       @id @default(uuid())
+  name           String
+  plate          String       @unique
+  type           String
+  organizationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+  deletedBy      String?
+  fuelLogs       FuelLog[]
+  organization   Organization @relation(fields: [organizationId], references: [id])
+}
+
+model FuelLog {
+  id        String    @id @default(uuid())
+  vehicleId String
+  driver    String
+  liters    Float
+  totalCost Float
+  date      DateTime  @default(now())
+  location  String
+  vendor    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  deletedBy String?
+  vehicle   Vehicle   @relation(fields: [vehicleId], references: [id])
+}
+
+model Printer {
+  id                String               @id @default(uuid())
+  printerName       String
+  name              String
+  vendor            String               @default("HP")
+  model             String
+  ipAddress         String
+  location          String               @default("Abuja Headquarters")
+  departmentId      String
+  serialNumber      String               @default("")
+  status            String
+  pagesPrintedMonth Int                  @default(0)
+  organizationId    String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  deletedAt         DateTime?
+  deletedBy         String?
+  department        Department           @relation(fields: [departmentId], references: [id])
+  organization      Organization         @relation(fields: [organizationId], references: [id])
+  alerts            PrinterAlert[]
+  printerStatus     PrinterStatus?
+  usageMetrics      PrinterUsageMetric[]
+  printJobs         PrintJob[]
+}
+
+model PrinterStatus {
+  id                 String   @id @default(uuid())
+  printerId          String   @unique
+  paperLevel         Int      @default(100)
+  tonerLevel         Int      @default(100)
+  drumLife           Int      @default(100)
+  maintenanceKitLife Int      @default(100)
+  pagesPrinted       Int      @default(0)
+  dailyPages         Int      @default(0)
+  monthlyPages       Int      @default(0)
+  updatedAt          DateTime @updatedAt
+  printer            Printer  @relation(fields: [printerId], references: [id], onDelete: Cascade)
+}
+
+model PrinterAlert {
+  id        String   @id @default(uuid())
+  printerId String
+  type      String
+  message   String
+  severity  String
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  printer   Printer  @relation(fields: [printerId], references: [id], onDelete: Cascade)
+}
+
+model PrinterUsageMetric {
+  id           String   @id @default(uuid())
+  printerId    String
+  pagesPrinted Int
+  pagesColor   Int      @default(0)
+  pagesMono    Int      @default(0)
+  timestamp    DateTime @default(now())
+  printer      Printer  @relation(fields: [printerId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id             String         @id @default(uuid())
+  fileName       String
+  sizeKb         Int
+  category       String
+  classification String
+  uploadedById   String
+  uploadedAt     DateTime       @default(now())
+  status         ApprovalStatus @default(DRAFT)
+  organizationId String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+  deletedBy      String?
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+  uploadedBy     User           @relation(fields: [uploadedById], references: [id])
+}
+
+model UpcomingTask {
+  id        String    @id @default(uuid())
+  task      String
+  dueDate   String
+  owner     String
+  module    String
+  priority  String
+  status    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  deletedBy String?
+}
+
+model ActionAlert {
+  id          String   @id @default(uuid())
+  severity    String
+  module      String
+  message     String
+  date        String
+  actionLabel String
+  actionType  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  user      String
+  action    String
+  module    String
+  timestamp String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  action     String
+  module     String
+  timestamp  DateTime @default(now())
+  entityId   String?
+  entityType String?
+  oldValues  String?
+  newValues  String?
+  user       User     @relation(fields: [userId], references: [id])
+}
+
+model Invitation {
+  id           String    @id @default(uuid())
+  email        String
+  firstName    String?
+  lastName     String?
+  jobTitle     String?
+  departmentId String?
+  roleId       String?
+  phone        String?
+  branch       String?
+  manager      String?
+  tokenHash    String    @unique
+  status       String    @default("PENDING")
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  invitedBy    String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model LoginHistory {
+  id              String   @id @default(uuid())
+  userId          String
+  ipAddress       String?
+  browser         String?
+  device          String?
+  operatingSystem String?
+  location        String?
+  status          String
+  createdAt       DateTime @default(now())
+}
+
+model Role {
+  id              String           @id @default(uuid())
+  name            String           @unique
+  description     String?
+  isSystem        Boolean          @default(false)
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  rolePermissions RolePermission[]
+}
+
+model Permission {
+  id              String           @id @default(uuid())
+  module          String
+  action          String
+  description     String?
+  createdAt       DateTime         @default(now())
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+}
+
+model PrintJob {
+  id           String   @id @default(uuid())
+  userId       String
+  printerId    String
+  documentId   String?
+  documentName String?
+  pages        Int
+  status       String
+  ip           String?
+  device       String?
+  timestamp    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  printer      Printer  @relation(fields: [printerId], references: [id], onDelete: Cascade)
+}
+
+enum RoleEnum {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  OFFICER
+  VIEWER
+}
+
+enum SubscriptionCategory {
+  INTERNET
+  SOFTWARE
+  DOMAIN
+  HOSTING
+  CLOUD
+  SECURITY
+  MAINTENANCE
+  UTILITIES
+}
+
+enum ApprovalStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}

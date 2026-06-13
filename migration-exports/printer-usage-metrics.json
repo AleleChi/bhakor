@@ -1,0 +1,162 @@
+[
+  {
+    "id": "5d9e852b-1910-40ee-a6af-4d6eed9ce222",
+    "printerId": "2ecb83dc-1ca1-4a0c-8969-4ff45816e531",
+    "pagesPrinted": 50,
+    "pagesColor": 20,
+    "pagesMono": 30,
+    "timestamp": "2026-06-11T22:30:36.489Z"
+  },
+  {
+    "id": "f3a26bd1-f7a1-4b66-80e7-0109bc4283e7",
+    "printerId": "be78ad80-1f56-45e4-a04e-ee02fec00e23",
+    "pagesPrinted": 55,
+    "pagesColor": 21,
+    "pagesMono": 34,
+    "timestamp": "2026-06-11T22:30:36.492Z"
+  },
+  {
+    "id": "2accb37e-7daf-4362-b6ed-e931c2abde54",
+    "printerId": "5fa2c96d-30be-4448-a266-a75ede5fa09b",
+    "pagesPrinted": 60,
+    "pagesColor": 22,
+    "pagesMono": 38,
+    "timestamp": "2026-06-11T22:30:36.494Z"
+  },
+  {
+    "id": "629a1a87-95ec-44e1-bbd9-91a2a8602509",
+    "printerId": "3afffe73-9e6f-44f4-bddf-5f58edc20025",
+    "pagesPrinted": 65,
+    "pagesColor": 23,
+    "pagesMono": 42,
+    "timestamp": "2026-06-11T22:30:36.496Z"
+  },
+  {
+    "id": "a9f166c2-e09b-4a2a-b138-436cef056e84",
+    "printerId": "f0d034aa-beeb-468e-81d5-a94abbc03a14",
+    "pagesPrinted": 70,
+    "pagesColor": 24,
+    "pagesMono": 46,
+    "timestamp": "2026-06-11T22:30:36.498Z"
+  },
+  {
+    "id": "6bc7dcbe-5272-4492-937b-15ed00476128",
+    "printerId": "2e45961b-6be2-4cb3-aefd-2f12a3faff76",
+    "pagesPrinted": 75,
+    "pagesColor": 25,
+    "pagesMono": 50,
+    "timestamp": "2026-06-11T22:30:36.500Z"
+  },
+  {
+    "id": "be680761-f4b7-4b6d-9fdb-75a47f86fac9",
+    "printerId": "a17a40b3-c378-4b43-b389-f1871121a625",
+    "pagesPrinted": 80,
+    "pagesColor": 26,
+    "pagesMono": 54,
+    "timestamp": "2026-06-11T22:30:36.503Z"
+  },
+  {
+    "id": "582dda04-6509-42f7-9819-0239b64ee1b4",
+    "printerId": "0d3f19c1-14ed-4e1c-a687-64124b43b424",
+    "pagesPrinted": 85,
+    "pagesColor": 27,
+    "pagesMono": 58,
+    "timestamp": "2026-06-11T22:30:36.506Z"
+  },
+  {
+    "id": "99ee6fc2-0f10-4908-abcf-0673e02025c9",
+    "printerId": "cf1167f5-38f4-4c9b-baba-66c51e634451",
+    "pagesPrinted": 90,
+    "pagesColor": 28,
+    "pagesMono": 62,
+    "timestamp": "2026-06-11T22:30:36.510Z"
+  },
+  {
+    "id": "5edc5229-5a8c-4fc5-9e2f-d3def9bf7f3e",
+    "printerId": "2f2ecd42-edb1-4446-a89a-780fbaf88350",
+    "pagesPrinted": 95,
+    "pagesColor": 29,
+    "pagesMono": 66,
+    "timestamp": "2026-06-11T22:30:36.513Z"
+  },
+  {
+    "id": "e3ce9c8d-ea3c-46a1-859e-8495bf89b829",
+    "printerId": "0f164fe0-b3ac-4ebf-807e-003d9fc7c566",
+    "pagesPrinted": 100,
+    "pagesColor": 30,
+    "pagesMono": 70,
+    "timestamp": "2026-06-11T22:30:36.515Z"
+  },
+  {
+    "id": "fa10bebe-bffb-42b2-96e0-e2c17eebb338",
+    "printerId": "db113fe5-312e-4811-b524-0d386044e55c",
+    "pagesPrinted": 105,
+    "pagesColor": 31,
+    "pagesMono": 74,
+    "timestamp": "2026-06-11T22:30:36.517Z"
+  },
+  {
+    "id": "d8a62663-5ff4-4287-9d28-2a1c458dbd8d",
+    "printerId": "0b626eeb-c67d-4a35-b6e7-d6ec0e66cd73",
+    "pagesPrinted": 110,
+    "pagesColor": 32,
+    "pagesMono": 78,
+    "timestamp": "2026-06-11T22:30:36.521Z"
+  },
+  {
+    "id": "856b92f0-0571-4687-a737-0a44d2e6bcec",
+    "printerId": "c8010fbb-ec79-44ca-a8f9-55fbd82cb81f",
+    "pagesPrinted": 115,
+    "pagesColor": 33,
+    "pagesMono": 82,
+    "timestamp": "2026-06-11T22:30:36.523Z"
+  },
+  {
+    "id": "8a653cbb-b7e6-407a-878a-d50c6d2f5ac9",
+    "printerId": "4ada077a-df7f-4da4-916f-275f842ddc86",
+    "pagesPrinted": 120,
+    "pagesColor": 34,
+    "pagesMono": 86,
+    "timestamp": "2026-06-11T22:30:36.526Z"
+  },
+  {
+    "id": "8579df23-5e4b-48dd-934e-a187b98f3126",
+    "printerId": "27b16d4f-bcda-4339-8796-9de948b3a293",
+    "pagesPrinted": 125,
+    "pagesColor": 35,
+    "pagesMono": 90,
+    "timestamp": "2026-06-11T22:30:36.529Z"
+  },
+  {
+    "id": "210ff10c-6357-4c22-8c89-17284d1ef8af",
+    "printerId": "ca1b381d-922f-4bf4-ab21-619e413a309a",
+    "pagesPrinted": 130,
+    "pagesColor": 36,
+    "pagesMono": 94,
+    "timestamp": "2026-06-11T22:30:36.532Z"
+  },
+  {
+    "id": "ab2ecab6-7ebb-44fe-8cf7-9a322ccb3259",
+    "printerId": "9b508242-ee40-4512-86f9-f8a9f97272fd",
+    "pagesPrinted": 135,
+    "pagesColor": 37,
+    "pagesMono": 98,
+    "timestamp": "2026-06-11T22:30:36.534Z"
+  },
+  {
+    "id": "26afdec9-e948-4865-94ca-9aca035ff8a4",
+    "printerId": "162e363a-692b-4d2e-8cee-124b34d4cd72",
+    "pagesPrinted": 140,
+    "pagesColor": 38,
+    "pagesMono": 102,
+    "timestamp": "2026-06-11T22:30:36.538Z"
+  },
+  {
+    "id": "95f2f3a3-d66a-4a7b-a0f2-d3974c18a7c8",
+    "printerId": "d672c4d6-0d4c-45b3-b2ff-d07a8d03f5e8",
+    "pagesPrinted": 145,
+    "pagesColor": 39,
+    "pagesMono": 106,
+    "timestamp": "2026-06-11T22:30:36.540Z"
+  }
+]
