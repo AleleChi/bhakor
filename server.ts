@@ -28,10 +28,19 @@ async function bootstrap() {
 
   // Enable secure cross-origin queries
   app.enableCors({
-    origin: [
-      'https://bhakor.vercel.app',
-      'http://localhost:5173'
-    ],
+    origin: function (origin, callback) {
+      if (!origin || 
+          origin.startsWith('https://bhakor.vercel.app') || 
+          origin.includes('localhost') || 
+          origin.includes('127.0.0.1') ||
+          origin.includes('.run.app') ||
+          origin.includes('.vercel.app')
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true
   });
 

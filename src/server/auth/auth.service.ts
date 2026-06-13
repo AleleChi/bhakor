@@ -399,7 +399,8 @@ export class AuthService implements OnModuleInit {
       }
     });
 
-    const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/?view=reset&token=${resetToken}`;
+    const frontendBase = process.env.VITE_FRONTEND_URL || process.env.FRONTEND_URL || 'https://bhakor.vercel.app';
+    const resetUrl = `${frontendBase.replace(/\/$/, '')}/?view=reset&token=${resetToken}`;
     await this.emailService.sendPasswordResetEmail(user.email, resetUrl);
 
     return {
@@ -679,6 +680,71 @@ export class AuthService implements OnModuleInit {
     };
   }
 
+  async resendInvitationStandalone(email: string, adminId?: string) {
+    const u = await this.prisma.user.findFirst({
+      where: { email: { equals: email.trim(), mode: 'insensitive' } }
+    });
+    if (!u) {
+      throw new NotFoundException('Security exception: The specified user was not identified.');
+    }
+    if (u.status !== 'INVITED') {
+      throw new BadRequestException('Action rejected: Account is already activated or not in invited state.');
+    }
+
+    const inviteRecord = await this.prisma.invitation.findFirst({
+      where: { email: { equals: u.email, mode: 'insensitive' }, status: 'PENDING' }
+    });
+
+    const rawToken = 'inv_' + crypto.randomBytes(32).toString('hex');
+    const newTokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    if (inviteRecord) {
+      await this.prisma.invitation.update({
+        where: { id: inviteRecord.id },
+        data: {
+          tokenHash: newTokenHash,
+          expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000)
+        }
+      });
+    } else {
+      await this.prisma.invitation.create({
+        data: {
+          email: u.email,
+          status: 'PENDING',
+          expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000),
+          invitedBy: adminId || 'Sovereign Administrator',
+          departmentId: 'Advisory & Compliance',
+          tokenHash: newTokenHash,
+        }
+      });
+    }
+
+    await this.prisma.user.update({
+      where: { id: u.id },
+      data: { invitationToken: newTokenHash }
+    });
+
+    const frontendBase = process.env.VITE_FRONTEND_URL || process.env.FRONTEND_URL || 'https://bhakor.vercel.app';
+    const resendUrl = `${frontendBase.replace(/\/$/, '')}/accept-invitation/${rawToken}`;
+    await this.emailService.sendInvitationEmail(
+      u.email,
+      resendUrl,
+      'Super Administrator',
+      u.name,
+      u.role,
+      inviteRecord?.departmentId || 'Advisory & Compliance',
+      '72 Hours',
+      inviteRecord?.id || 'NEW_INVITATION'
+    );
+
+    return { 
+      success: true, 
+      message: "Invitation successfully dispatched via Resend API.", 
+      token: rawToken,
+      url: resendUrl
+    };
+  }
+
   async inviteUser(
     email: string, 
     name: string, 
@@ -776,7 +842,8 @@ export class AuthService implements OnModuleInit {
       }
     });
 
-    const inviteUrl = `${process.env.APP_URL || 'http://localhost:3000'}/accept-invitation?token=${rawToken}`;
+    const frontendBase = process.env.VITE_FRONTEND_URL || process.env.FRONTEND_URL || 'https://bhakor.vercel.app';
+    const inviteUrl = `${frontendBase.replace(/\/$/, '')}/accept-invitation/${rawToken}`;
     const expiresAtStr = '72 Hours';
     
     EnterpriseLogger.info('EMAIL', `EMAIL_DISPATCH_STARTED: Passing control to email delivery queue context to send invitation mail to [${email}]`);
@@ -1306,10 +1373,23 @@ export class AuthService implements OnModuleInit {
     return { url, displayUrl };
   }
 
-  async updateProfile(userId: string, data: { name?: string; photoPath?: string }) {
+  async updateProfile(userId: string, data: { name?: string; photoPath?: string; email?: string }) {
     const updateObj: any = {};
     if (data.name) updateObj.name = data.name;
     if (data.photoPath !== undefined) updateObj.photoPath = data.photoPath;
+    
+    if (data.email) {
+      const existing = await this.prisma.user.findFirst({
+        where: {
+          email: data.email,
+          NOT: { id: userId }
+        }
+      });
+      if (existing) {
+        throw new BadRequestException('Security exception: The specified email address is already claimed by another account.');
+      }
+      updateObj.email = data.email;
+    }
 
     const user = await this.prisma.user.update({
       where: { id: userId },
@@ -1713,7 +1793,8 @@ export class AuthService implements OnModuleInit {
                 data: { invitationToken: newTokenHash }
               });
 
-              const resendUrl = `${process.env.APP_URL || 'http://localhost:3000'}/accept-invitation?token=${rawToken}`;
+              const frontendBase = process.env.VITE_FRONTEND_URL || process.env.FRONTEND_URL || 'https://bhakor.vercel.app';
+              const resendUrl = `${frontendBase.replace(/\/$/, '')}/accept-invitation/${rawToken}`;
               await this.emailService.sendInvitationEmail(
                 u.email,
                 resendUrl,

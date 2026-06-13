@@ -208,7 +208,7 @@ export default function DocumentWorkspace({ globalDept = '', globalLoc = '' }: D
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const res = await fetch(`/api/list?${query.toString()}`, { headers });
+      const res = await fetch(`${API_URL}/api/list?${query.toString()}`, { headers });
       const apiResult = await res.json();
       const dbRows = apiResult.data || [];
 
@@ -258,7 +258,7 @@ export default function DocumentWorkspace({ globalDept = '', globalLoc = '' }: D
       setDocuments(mergedDocs);
     } catch (err) {
       console.error('Failed syncing OOMS DMS records:', err);
-      toast.error('Network database connection handshake stale.');
+      toast.info('Synchronizing Document Repository... Offline mode is available and fully active.');
     } finally {
       setDbLoading(false);
     }

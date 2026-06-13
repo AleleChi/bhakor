@@ -88,4 +88,48 @@ export class RegistryController {
       userAgent
     );
   }
+
+  @UseGuards(JwtGuard)
+  @Post('registry/bulk-action')
+  @HttpCode(HttpStatus.OK)
+  bulkAction(
+    @Request() req: any,
+    @Body() body: { moduleName: string; action: 'archive' | 'restore' | 'export' | 'delete'; ids: string[] }
+  ) {
+    return this.registryService.bulkAction({
+      moduleName: body.moduleName,
+      action: body.action,
+      ids: body.ids,
+      userId: req.user.sub,
+    });
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('governance/archived')
+  getArchived(@Request() req: any) {
+    return this.registryService.getArchivedRecords(req.user.sub);
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('governance/purge')
+  @HttpCode(HttpStatus.OK)
+  purge(
+    @Request() req: any,
+    @Body() body: { moduleName: string; ids: string[]; confirmation: string }
+  ) {
+    return this.registryService.purgeRecords(body.moduleName, body.ids, body.confirmation, req.user.sub);
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('governance/purge-history')
+  getPurgeHistory(@Request() req: any) {
+    return this.registryService.getPurgeHistory(req.user.sub);
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('governance/production-cleanup')
+  @HttpCode(HttpStatus.OK)
+  productionCleanup(@Request() req: any) {
+    return this.registryService.productionCleanup(req.user.sub);
+  }
 }

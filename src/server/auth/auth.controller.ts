@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Inject, UseGuards, Request, Get, Query, Param, Put, ForbiddenException, Headers } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Inject, UseGuards, Request, Get, Query, Param, Put, ForbiddenException, Headers, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtGuard } from './jwt.guard';
 
@@ -48,6 +48,24 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   acceptInvite(@Body() body: { token: string; password?: string; name: string; photoPath?: string }) {
     return this.authService.acceptInvitation(body.token, body.password, body.name, body.photoPath);
+  }
+
+  @Post('resend-invitation')
+  @HttpCode(HttpStatus.OK)
+  async resendInvitationStandalone(@Body() body: { email: string }) {
+    if (!body.email) {
+      throw new BadRequestException('Security credential error: email address parameter is required.');
+    }
+    return this.authService.resendInvitationStandalone(body.email);
+  }
+
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  async resendVerificationStandalone(@Body() body: { email: string }) {
+    if (!body.email) {
+      throw new BadRequestException('Security credential error: email address parameter is required.');
+    }
+    return this.authService.resendInvitationStandalone(body.email);
   }
 
   @Get('invitation-details/:token')
@@ -217,7 +235,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   updateProfile(
     @Request() req: any,
-    @Body() body: { name?: string; photoPath?: string },
+    @Body() body: { name?: string; photoPath?: string; email?: string },
   ) {
     return this.authService.updateProfile(req.user.sub, body);
   }
@@ -226,6 +244,18 @@ export class AuthController {
   @Post('profile/change-password')
   @HttpCode(HttpStatus.OK)
   changePassword(
+    @Request() req: any,
+    @Body() body: { currentPassword?: string; newPassword?: string; password?: string; current?: string },
+  ) {
+    const current = body.currentPassword || body.current || '';
+    const newPw = body.newPassword || body.password || '';
+    return this.authService.changePasswordSelf(req.user.sub, current, newPw);
+  }
+
+  @UseGuards(JwtGuard)
+  @Post('profile/password')
+  @HttpCode(HttpStatus.OK)
+  changePasswordAlias(
     @Request() req: any,
     @Body() body: { currentPassword?: string; newPassword?: string; password?: string; current?: string },
   ) {

@@ -578,9 +578,20 @@ export default function AuthFlow({ onLoginSuccess, darkMode, setDarkMode }: Auth
   };
 
   useEffect(() => {
+    const pathname = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
-    const urlView = params.get('view') || (window.location.pathname === '/accept-invitation' ? 'accept' : '');
-    const urlToken = params.get('token');
+    let urlView = params.get('view') || '';
+    let urlToken = params.get('token') || '';
+
+    if (pathname === '/accept-invitation') {
+      if (!urlView) urlView = 'accept';
+    } else if (pathname.startsWith('/accept-invitation/')) {
+      urlView = 'accept';
+      const parts = pathname.split('/');
+      if (parts[2]) {
+        urlToken = parts[2];
+      }
+    }
     
     if (urlView === 'accept' || urlView === 'invite') {
       setView('invite');

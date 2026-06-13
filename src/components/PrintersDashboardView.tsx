@@ -45,76 +45,7 @@ interface PrintersDashboardViewProps {
 }
 
 // Initial default printers to guarantee live dashboard seeding
-const INITIAL_PRINTERS: PrinterRecord[] = [
-  {
-    id: "prn-1",
-    printerName: "Registry High-Yield HP LaserJet",
-    name: "Registry HP G5",
-    vendor: "HP",
-    model: "LaserJet Pro M404dn",
-    department: "Operations",
-    ipAddress: "192.168.10.45",
-    location: "Main Registry Vault - Annex A",
-    serialNumber: "SND-HP-M404-098F2",
-    status: "Online",
-    pagesPrintedMonth: 12450,
-    tonerLevel: 82,
-    paperLevel: 90,
-    drumLife: 88,
-    maintenanceKitLife: 84
-  },
-  {
-    id: "prn-2",
-    printerName: "Procurement Multi-Tray Canon ImageRUNNER",
-    name: "Procurement Canon",
-    vendor: "Canon",
-    model: "imageRUNNER ADVANCE C5535i",
-    department: "Procurement",
-    ipAddress: "192.168.10.82",
-    location: "Procurement Wing - Ground Floor",
-    serialNumber: "SND-CAN-IR-C5535-992",
-    status: "Low Toner",
-    pagesPrintedMonth: 28400,
-    tonerLevel: 12,
-    paperLevel: 65,
-    drumLife: 74,
-    maintenanceKitLife: 60
-  },
-  {
-    id: "prn-3",
-    printerName: "Finance Solid-State Kyocera TaskALFA",
-    name: "Finance Kyocera",
-    vendor: "Kyocera",
-    model: "TASKalfa 4002i",
-    department: "Finance",
-    ipAddress: "192.168.10.15",
-    location: "Finance Office - Room 204",
-    serialNumber: "SND-KYO-TA-4002-331",
-    status: "Online",
-    pagesPrintedMonth: 18900,
-    tonerLevel: 64,
-    paperLevel: 8,
-    drumLife: 92,
-    maintenanceKitLife: 14
-  },
-  {
-    id: "prn-4",
-    printerName: "Sovereign Executive Office Ricoh",
-    name: "Executive Ricoh Office Suite",
-    vendor: "Ricoh",
-    model: "IM C2500 Color MFP",
-    department: "Executive Office",
-    ipAddress: "192.168.12.110",
-    location: "DG Executive Wing - Suite B",
-    serialNumber: "SND-RIC-IMC-2500-001",
-    status: "Offline",
-    pagesPrintedMonth: 4200,
-    tonerLevel: 95,
-    paperLevel: 0,
-    drumLife: 98,
-    maintenanceKitLife: 95
-  }
-];
+const INITIAL_PRINTERS: PrinterRecord[] = [];
 
 export default function PrintersDashboardView({ 
   globalDept, 
@@ -169,35 +100,7 @@ export default function PrintersDashboardView({
     setIsLoading(false);
 
     // Seed default alert system warnings
-    setSimulatedAlerts([
-      {
-        id: "alert-1",
-        printerId: "prn-2",
-        printerName: "Procurement Canon C5535i",
-        type: "Toner Exhaustion Danger",
-        message: "Black chemical toner level has drop-depleted to 12%. Replacement kit required.",
-        severity: "high",
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: "alert-2",
-        printerId: "prn-3",
-        printerName: "Finance Kyocera TASKalfa",
-        type: "Paper Low Trigger",
-        message: "Paper reserves on Tray 1 dropped to 8% level. Standard A4 refilling needed.",
-        severity: "medium",
-        timestamp: new Date(Date.now() - 3600000).toISOString()
-      },
-      {
-        id: "alert-3",
-        printerId: "prn-4",
-        printerName: "Executive Ricoh IM C2500",
-        type: "Device Host Offline",
-        message: "No heartbeat received over Port 161 for 15 minutes. Verify LAN switches.",
-        severity: "critical",
-        timestamp: new Date(Date.now() - 7200000).toISOString()
-      }
-    ]);
+    setSimulatedAlerts([]);
   }, []);
 
   // Fleet Alerts triggers
@@ -613,8 +516,15 @@ export default function PrintersDashboardView({
                         <div className="p-3 bg-slate-50 border border-slate-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
                           <Printer className="w-5 h-5 text-slate-400 animate-pulse" />
                         </div>
-                        <p className="font-extrabold text-xs text-slate-700 uppercase tracking-wider">No devices match critical parameters</p>
-                        <p className="text-[10px] text-slate-450 mt-1 font-semibold">Change department filters or active status vectors to refresh feed.</p>
+                        <p className="font-extrabold text-xs text-[#0F172A] uppercase tracking-wider">No Records Found</p>
+                        <p className="text-[10px] text-slate-450 mt-1 font-semibold mb-4">No active devices have been discovered or manually registered.</p>
+                        <button
+                          type="button"
+                          onClick={() => onTriggerQuickAdd('Printers')}
+                          className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase rounded-lg shadow-xs cursor-pointer transition"
+                        >
+                          Register Device
+                        </button>
                       </td>
                     </tr>
                   ) : (

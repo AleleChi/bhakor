@@ -442,6 +442,12 @@ export default function UserDirectoryTable({
             >
               Suspend All
             </button>
+            <button
+              onClick={() => onBulkAction('RESEND_INVITATION', selectedIds)}
+              className="px-3 py-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-white rounded-lg text-xs font-bold cursor-pointer transition-colors"
+            >
+              Resend Invitations
+            </button>
 
             {/* Set Role */}
             <div className="flex items-center gap-1.5 bg-white border border-[#E5E7EB] px-2 py-1 rounded-lg">

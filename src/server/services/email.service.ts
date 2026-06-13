@@ -122,6 +122,10 @@ export class EmailService {
             </a>
           </div>
 
+          <p style="font-size: 11px; color: #64748B; text-align: center; margin-top: 16px;">
+            Already activated? Access the primary secure portal login directly at: <a href="https://bhakor.vercel.app/login" style="color: #F59E0B; text-decoration: underline; font-weight: bold;">https://bhakor.vercel.app/login</a>
+          </p>
+
           <p style="font-size: 11px; color: #64748B; text-align: center; margin-top: 24px;">
             Or copy and paste this URL into your browser address bar:
           </p>
@@ -162,6 +166,8 @@ export class EmailService {
 
   // 3. ACCOUNT ACTIVATED TEMPLATE
   async sendAccountActivatedEmail(to: string, name: string): Promise<boolean> {
+    const frontendBase = process.env.VITE_FRONTEND_URL || process.env.FRONTEND_URL || 'https://bhakor.vercel.app';
+    const loginUrl = frontendBase.replace(/\/$/, '');
     const subject = 'OOMS Nigeria - Credentials Successfully Active';
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; padding: 24px; background: #F8FAFC; color: #0F172A; max-width: 600px; margin: 0 auto; border-radius: 12px; border: 1px solid #E2E8F0;">
@@ -169,7 +175,7 @@ export class EmailService {
         <p>Hello ${name},</p>
         <p>Your OOMS Nigeria account registration has been finalized. Your authentication path is now active, and you can log in to the enterprise dashboard gateway.</p>
         <p style="margin: 24px 0;">
-          <a href="${process.env.APP_URL || 'http://localhost:3000'}" style="background: #10B981; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+          <a href="${loginUrl}" style="background: #10B981; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
             Access Gateway Portal
           </a>
         </p>

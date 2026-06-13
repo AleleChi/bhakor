@@ -38,13 +38,25 @@ export default function KPICardsSection({ kpis, onCardClick, isLoading }: KPICar
 
   // Find actual numbers inside kpis database values if available, else bind standard executive defaults
   const findKPIValue = (titleKeyword: string, defaultValue: string): string => {
-    const found = kpis?.find(k => k.title.toLowerCase().includes(titleKeyword));
-    return found ? String(found.value) : defaultValue;
+    if (!kpis || kpis.length === 0) return "0 Records";
+    const found = kpis.find(k => k.title.toLowerCase().includes(titleKeyword.toLowerCase()));
+    if (found) {
+      const valStr = String(found.value).trim();
+      if (valStr === '0' || valStr === '0.00' || valStr === '0 Records' || valStr === '') {
+        return "0 Records";
+      }
+      return valStr;
+    }
+    return "0 Records";
   };
 
   const findKPIChange = (titleKeyword: string, defaultChange: string): string => {
-    const found = kpis?.find(k => k.title.toLowerCase().includes(titleKeyword));
-    return found ? found.change : defaultChange;
+    if (!kpis || kpis.length === 0) return "0%";
+    const found = kpis.find(k => k.title.toLowerCase().includes(titleKeyword.toLowerCase()));
+    if (found) {
+      return found.change;
+    }
+    return "0%";
   };
 
   const items = [

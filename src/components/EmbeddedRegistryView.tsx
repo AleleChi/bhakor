@@ -75,6 +75,7 @@ export default function EmbeddedRegistryView({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Enterprise Workspace subTab selection per module
   const [activeSubTab, setActiveSubTab] = useState<string>('all');
@@ -159,16 +160,19 @@ export default function EmbeddedRegistryView({
     setActiveSubTab('all');
     setSelectedRecord(null);
     setIsDrawerOpen(false);
+    setSelectedIds([]);
   }, [activeModule]);
 
   // Adjust filters when subTab shifts
   useEffect(() => {
     setPage(1);
     setIsDrawerOpen(false);
+    setSelectedIds([]);
   }, [activeSubTab]);
 
   useEffect(() => {
     setPage(1);
+    setSelectedIds([]);
   }, [selectedDept, selectedLoc, selectedStatus, searchTerm]);
 
   useEffect(() => {
@@ -193,7 +197,7 @@ export default function EmbeddedRegistryView({
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const res = await fetch(`/api/list?${query.toString()}`, { headers });
+        const res = await fetch(`${API_URL}/api/list?${query.toString()}`, { headers });
         const result = await res.json();
         
         setRecords(result.data || []);
@@ -398,6 +402,83 @@ export default function EmbeddedRegistryView({
     }
   };
 
+  const handleBulkAction = async (action: 'archive' | 'restore' | 'export') => {
+    if (selectedIds.length === 0) return;
+
+    if (action === 'export') {
+      const selectedRecords = records.filter(r => selectedIds.includes(r.id));
+      if (selectedRecords.length === 0) {
+        toast.error('No matching records found to export.', {
+          style: { background: '#FFFFFF', border: '1px solid #E5E7EB', color: '#EF4444' }
+        });
+        return;
+      }
+      
+      const keys = Array.from(new Set(selectedRecords.flatMap(r => Object.keys(r))));
+      const csvHeader = keys.join(',');
+      const csvRows = selectedRecords.map(r => {
+        return keys.map(k => {
+          const val = r[k];
+          if (val === null || val === undefined) return '';
+          const str = typeof val === 'object' ? JSON.stringify(val) : String(val);
+          return `"${str.replace(/"/g, '""')}"`;
+        }).join(',');
+      });
+      const csvContent = [csvHeader, ...csvRows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `ooms_${activeModule.toLowerCase()}_export_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      const token = localStorage.getItem('ooms_token');
+      await fetch(`${API_URL}/api/registry/bulk-action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ moduleName: activeModule, action: 'export', ids: selectedIds })
+      });
+
+      toast.success(`Exported ${selectedRecords.length} records to CSV successfully.`, {
+        style: { background: '#FFFFFF', border: '1px solid #E5E7EB', color: '#10B981' }
+      });
+      setSelectedIds([]);
+      return;
+    }
+
+    const token = localStorage.getItem('ooms_token');
+    try {
+      const res = await fetch(`${API_URL}/api/registry/bulk-action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ moduleName: activeModule, action, ids: selectedIds })
+      });
+
+      if (res.ok) {
+        toast.success(`Bulk ${action} operation completed successfully for ${selectedIds.length} records.`, {
+          style: { background: '#FFFFFF', border: '1px solid #E5E7EB', color: '#10B981' }
+        });
+        setSelectedIds([]);
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      } else {
+        const payloadErr = await res.json().catch(() => ({}));
+        throw new Error(payloadErr.message || `Failed to perform bulk ${action}.`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || `Bulk operation failed.`, {
+        style: { background: '#FFFFFF', border: '1px solid #E5E7EB', color: '#EF4444' }
+      });
+    }
+  };
+
   const getStatusBadgeClass = (status: string) => {
     const s = status ? status.toLowerCase().replace(/[\s_]+/g, '-') : '';
     let badgeType = 'neutral';
@@ -526,6 +607,42 @@ export default function EmbeddedRegistryView({
         {/* MAIN WORKSPACE SECTION */}
         <div className="flex-1 min-w-0 bg-white border border-[#E5E7EB] rounded-2xl shadow-xs overflow-hidden flex flex-col min-h-[580px]">
           
+          {selectedIds.length > 0 && (
+            <div className="bg-[#FFF7ED] border-b border-[#FED7AA] px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#D97706] uppercase tracking-wider font-mono">
+                  🔒 {selectedIds.length} records selected
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => handleBulkAction('archive')}
+                  className="px-3 py-1.5 bg-white hover:bg-orange-50 text-slate-800 border border-[#E5E7EB] rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
+                >
+                  Archive Selected
+                </button>
+                <button
+                  onClick={() => handleBulkAction('restore')}
+                  className="px-3 py-1.5 bg-white hover:bg-orange-50 text-slate-800 border border-[#E5E7EB] rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
+                >
+                  Restore Selected
+                </button>
+                <button
+                  onClick={() => handleBulkAction('export')}
+                  className="px-3 py-1.5 bg-white hover:bg-orange-50 text-slate-800 border border-[#E5E7EB] rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer shadow-2xs"
+                >
+                  Export CSV
+                </button>
+                <button
+                  onClick={() => setSelectedIds([])}
+                  className="px-2 py-1.5 text-slate-500 hover:text-slate-800 text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer"
+                >
+                  Clear Selection
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* SEARCH, SORT, AND FILTER WORKSPACE TOOLBAR */}
           <div className="p-4 bg-slate-50 border-b border-[#E5E7EB] flex flex-col md:flex-row items-center justify-between gap-4">
             
@@ -609,6 +726,20 @@ export default function EmbeddedRegistryView({
                   <thead>
                     {activeModule === 'Correspondence' && (
                       <tr>
+                        <th className="sticky top-0 z-10 w-12 text-center bg-[#0F172A] border-b border-[#E5E7EB] px-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-slate-300 text-amber-550 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                            checked={currentWorkspaceItems.length > 0 && currentWorkspaceItems.every(item => selectedIds.includes(item.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds(currentWorkspaceItems.map(item => item.id));
+                              } else {
+                                setSelectedIds([]);
+                              }
+                            }}
+                          />
+                        </th>
                         <th onClick={() => toggleSort('id')} className={headStyle}>ID <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('trackingNumber')} className={headStyle}>Tracking # <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('subject')} className={headStyle}>Subject <ArrowUpDown className="w-3 h-3 inline" /></th>
@@ -620,6 +751,20 @@ export default function EmbeddedRegistryView({
                     )}
                     {activeModule === 'Subscriptions' && (
                       <tr>
+                        <th className="sticky top-0 z-10 w-12 text-center bg-[#0F172A] border-b border-[#E5E7EB] px-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-slate-300 text-amber-550 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                            checked={currentWorkspaceItems.length > 0 && currentWorkspaceItems.every(item => selectedIds.includes(item.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds(currentWorkspaceItems.map(item => item.id));
+                              } else {
+                                setSelectedIds([]);
+                              }
+                            }}
+                          />
+                        </th>
                         <th onClick={() => toggleSort('id')} className={headStyle}>ID <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('serviceName')} className={headStyle}>Service Name <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('cost')} className={headStyle}>Total Cost <ArrowUpDown className="w-3 h-3 inline" /></th>
@@ -631,6 +776,20 @@ export default function EmbeddedRegistryView({
                     )}
                     {activeModule === 'Inventory' && (
                       <tr>
+                        <th className="sticky top-0 z-10 w-12 text-center bg-[#0F172A] border-b border-[#E5E7EB] px-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-slate-300 text-amber-550 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                            checked={currentWorkspaceItems.length > 0 && currentWorkspaceItems.every(item => selectedIds.includes(item.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds(currentWorkspaceItems.map(item => item.id));
+                              } else {
+                                setSelectedIds([]);
+                              }
+                            }}
+                          />
+                        </th>
                         <th onClick={() => toggleSort('id')} className={headStyle}>ID <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('itemName')} className={headStyle}>Item Stock <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('sku')} className={headStyle}>SKU Code <ArrowUpDown className="w-3 h-3 inline" /></th>
@@ -642,6 +801,20 @@ export default function EmbeddedRegistryView({
                     )}
                     {activeModule === 'Fuel' && (
                       <tr>
+                        <th className="sticky top-0 z-10 w-12 text-center bg-[#0F172A] border-b border-[#E5E7EB] px-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-slate-300 text-amber-550 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                            checked={currentWorkspaceItems.length > 0 && currentWorkspaceItems.every(item => selectedIds.includes(item.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds(currentWorkspaceItems.map(item => item.id));
+                              } else {
+                                setSelectedIds([]);
+                              }
+                            }}
+                          />
+                        </th>
                         <th onClick={() => toggleSort('id')} className={headStyle}>ID <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('vehiclePlate')} className={headStyle}>Plate NO <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('driverName')} className={headStyle}>Assigned Driver <ArrowUpDown className="w-3 h-3 inline" /></th>
@@ -653,6 +826,20 @@ export default function EmbeddedRegistryView({
                     )}
                     {activeModule === 'Printer' && (
                       <tr>
+                        <th className="sticky top-0 z-10 w-12 text-center bg-[#0F172A] border-b border-[#E5E7EB] px-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-slate-300 text-amber-550 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                            checked={currentWorkspaceItems.length > 0 && currentWorkspaceItems.every(item => selectedIds.includes(item.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds(currentWorkspaceItems.map(item => item.id));
+                              } else {
+                                setSelectedIds([]);
+                              }
+                            }}
+                          />
+                        </th>
                         <th onClick={() => toggleSort('printerName')} className={headStyle}>Device Name <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('model')} className={headStyle}>Model <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('department')} className={headStyle}>Department <ArrowUpDown className="w-3 h-3 inline" /></th>
@@ -664,6 +851,20 @@ export default function EmbeddedRegistryView({
                     )}
                     {activeModule === 'Documents' && (
                       <tr>
+                        <th className="sticky top-0 z-10 w-12 text-center bg-[#0F172A] border-b border-[#E5E7EB] px-4">
+                          <input
+                            type="checkbox"
+                            className="rounded border-slate-300 text-amber-550 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                            checked={currentWorkspaceItems.length > 0 && currentWorkspaceItems.every(item => selectedIds.includes(item.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedIds(currentWorkspaceItems.map(item => item.id));
+                              } else {
+                                setSelectedIds([]);
+                              }
+                            }}
+                          />
+                        </th>
                         <th onClick={() => toggleSort('fileName')} className={headStyle}>File Name <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('sizeKb')} className={headStyle}>Size <ArrowUpDown className="w-3 h-3 inline" /></th>
                         <th onClick={() => toggleSort('classification')} className={headStyle}>Clearance <ArrowUpDown className="w-3 h-3 inline" /></th>
@@ -696,6 +897,22 @@ export default function EmbeddedRegistryView({
                             isHighlighted ? 'bg-[#FFF7ED] border-l-2 border-[#F59E0B]' : 'hover:bg-[#FFF7ED]/35 hover:border-l-2 hover:border-[#F59E0B]/50'
                           }`}
                         >
+                          {activeModule !== 'AuditLogs' && (
+                            <td className="w-12 text-center border-b border-[#F1F5F9] px-4" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                className="rounded border-slate-300 text-amber-550 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                                checked={selectedIds.includes(item.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedIds([...selectedIds, item.id]);
+                                  } else {
+                                    setSelectedIds(selectedIds.filter(id => id !== item.id));
+                                  }
+                                }}
+                              />
+                            </td>
+                          )}
                           {/* CORRESPONDENCE COLUMNS */}
                           {activeModule === 'Correspondence' && (
                             <>

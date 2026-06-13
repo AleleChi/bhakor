@@ -676,7 +676,8 @@ export class RegistryService {
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
       if (!user) throw new ForbiddenException('User context invalid.');
 
-      if (user.role === 'OFFICER') {
+      const isSuperAdmin = user.role === 'SUPER_ADMIN';
+      if (user.role === 'OFFICER' && !isSuperAdmin) {
         if (oldRecord.createdBy !== userId) {
           throw new ForbiddenException('Governance restriction: Officers can only edit correspondences registered by themselves.');
         }
@@ -817,6 +818,31 @@ export class RegistryService {
       oldRecord = await this.prisma.printer.findUnique({ where: { id } });
       if (!oldRecord) throw new BadRequestException('Record not found.');
 
+      if (payload.paperLevel !== undefined || payload.tonerLevel !== undefined || payload.drumLife !== undefined || payload.maintenanceKitLife !== undefined || payload.pagesPrinted !== undefined || payload.dailyPages !== undefined || payload.monthlyPages !== undefined) {
+        await this.prisma.printerStatus.upsert({
+          where: { printerId: id },
+          create: {
+            printerId: id,
+            paperLevel: payload.paperLevel !== undefined ? parseInt(payload.paperLevel, 10) : 100,
+            tonerLevel: payload.tonerLevel !== undefined ? parseInt(payload.tonerLevel, 10) : 100,
+            drumLife: payload.drumLife !== undefined ? parseInt(payload.drumLife, 10) : 100,
+            maintenanceKitLife: payload.maintenanceKitLife !== undefined ? parseInt(payload.maintenanceKitLife, 10) : 100,
+            pagesPrinted: payload.pagesPrinted !== undefined ? parseInt(payload.pagesPrinted, 10) : 0,
+            dailyPages: payload.dailyPages !== undefined ? parseInt(payload.dailyPages, 10) : 0,
+            monthlyPages: payload.monthlyPages !== undefined ? parseInt(payload.monthlyPages, 10) : 0,
+          },
+          update: {
+            paperLevel: payload.paperLevel !== undefined ? parseInt(payload.paperLevel, 10) : undefined,
+            tonerLevel: payload.tonerLevel !== undefined ? parseInt(payload.tonerLevel, 10) : undefined,
+            drumLife: payload.drumLife !== undefined ? parseInt(payload.drumLife, 10) : undefined,
+            maintenanceKitLife: payload.maintenanceKitLife !== undefined ? parseInt(payload.maintenanceKitLife, 10) : undefined,
+            pagesPrinted: payload.pagesPrinted !== undefined ? parseInt(payload.pagesPrinted, 10) : undefined,
+            dailyPages: payload.dailyPages !== undefined ? parseInt(payload.dailyPages, 10) : undefined,
+            monthlyPages: payload.monthlyPages !== undefined ? parseInt(payload.monthlyPages, 10) : undefined,
+          }
+        });
+      }
+
       const updated = await this.prisma.printer.update({
         where: { id },
         data: {
@@ -952,45 +978,78 @@ export class RegistryService {
     const defaultUser = await this.prisma.user.findFirst();
     const userId = operatorUserId || (defaultUser ? defaultUser.id : '');
 
+    const userObj = await this.prisma.user.findUnique({ where: { id: userId } });
+    const isSuperAdmin = userObj?.role === 'SUPER_ADMIN';
+
     let deletedRecord: any = null;
 
     if (moduleName === 'Correspondence') {
       await this.checkPermission(userId, 'CORRESPONDENCE_DELETE');
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      if (!user || user.role !== 'SUPER_ADMIN') {
-        throw new ForbiddenException('Regulatory constraint: Permanent purge operations are restricted to SUPER_ADMIN.');
+      if (isSuperAdmin) {
+        deletedRecord = await this.prisma.correspondence.delete({ where: { id } });
+      } else {
+        // Replace destructive delete with archiving
+        deletedRecord = await this.prisma.correspondence.update({
+          where: { id },
+          data: {
+            status: 'Archived',
+            archivedAt: new Date(),
+            archivedBy: userId,
+            deletedAt: new Date(),
+            deletedBy: userId,
+          }
+        });
       }
-      deletedRecord = await this.prisma.correspondence.delete({ where: { id } });
     } else if (moduleName === 'Subscriptions') {
       await this.checkPermission(userId, 'subscriptions.manage');
-      deletedRecord = await this.prisma.subscription.update({
-        where: { id },
-        data: { deletedAt: new Date(), deletedBy: userId }
-      });
+      if (isSuperAdmin) {
+        deletedRecord = await this.prisma.subscription.delete({ where: { id } });
+      } else {
+        deletedRecord = await this.prisma.subscription.update({
+          where: { id },
+          data: { deletedAt: new Date(), deletedBy: userId }
+        });
+      }
     } else if (moduleName === 'Inventory') {
       await this.checkPermission(userId, 'inventory.delete');
-      deletedRecord = await this.prisma.inventoryItem.update({
-        where: { id },
-        data: { deletedAt: new Date(), deletedBy: userId }
-      });
+      if (isSuperAdmin) {
+        deletedRecord = await this.prisma.inventoryItem.delete({ where: { id } });
+      } else {
+        deletedRecord = await this.prisma.inventoryItem.update({
+          where: { id },
+          data: { deletedAt: new Date(), deletedBy: userId }
+        });
+      }
     } else if (moduleName === 'Fuel') {
       await this.checkPermission(userId, 'fleet.manage');
-      deletedRecord = await this.prisma.fuelLog.update({
-        where: { id },
-        data: { deletedAt: new Date(), deletedBy: userId }
-      });
+      if (isSuperAdmin) {
+        deletedRecord = await this.prisma.fuelLog.delete({ where: { id } });
+      } else {
+        deletedRecord = await this.prisma.fuelLog.update({
+          where: { id },
+          data: { deletedAt: new Date(), deletedBy: userId }
+        });
+      }
     } else if (moduleName === 'Documents') {
       await this.checkPermission(userId, 'documents.delete');
-      deletedRecord = await this.prisma.document.update({
-        where: { id },
-        data: { deletedAt: new Date(), deletedBy: userId }
-      });
+      if (isSuperAdmin) {
+        deletedRecord = await this.prisma.document.delete({ where: { id } });
+      } else {
+        deletedRecord = await this.prisma.document.update({
+          where: { id },
+          data: { deletedAt: new Date(), deletedBy: userId }
+        });
+      }
     } else if (moduleName === 'Printer' || moduleName === 'Printers') {
       await this.checkPermission(userId, 'PRINTER_DELETE');
-      deletedRecord = await this.prisma.printer.update({
-        where: { id },
-        data: { deletedAt: new Date(), deletedBy: userId }
-      });
+      if (isSuperAdmin) {
+        deletedRecord = await this.prisma.printer.delete({ where: { id } });
+      } else {
+        deletedRecord = await this.prisma.printer.update({
+          where: { id },
+          data: { deletedAt: new Date(), deletedBy: userId }
+        });
+      }
     } else {
       throw new BadRequestException('Invalid module name for delete');
     }
@@ -1213,5 +1272,603 @@ export class RegistryService {
     }
 
     return { success: true, oldDeptName, newDeptName: departmentName, updatedRecord };
+  }
+
+  async checkSuperAdmin(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.role !== 'SUPER_ADMIN') {
+      throw new ForbiddenException('Operational authority audit: Super Admin clearance required.');
+    }
+    return user;
+  }
+
+  async getArchivedRecords(userId: string) {
+    await this.checkSuperAdmin(userId);
+
+    // Fetch soft-deleted records from each module
+    const correspondences = await this.prisma.correspondence.findMany({
+      where: {
+        OR: [
+          { status: 'Archived' },
+          { NOT: { deletedAt: null } }
+        ]
+      },
+      include: { department: true }
+    });
+
+    const documents = await this.prisma.document.findMany({
+      where: { NOT: { deletedAt: null } },
+      include: { uploadedBy: true }
+    });
+
+    const printers = await this.prisma.printer.findMany({
+      where: { NOT: { deletedAt: null } },
+      include: { department: true }
+    });
+
+    const inventory = await this.prisma.inventoryItem.findMany({
+      where: { NOT: { deletedAt: null } }
+    });
+
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { NOT: { deletedAt: null } },
+      include: { department: true }
+    });
+
+    const fuel = await this.prisma.fuelLog.findMany({
+      where: { NOT: { deletedAt: null } },
+      include: { vehicle: true }
+    });
+
+    const invitations = await this.prisma.invitation.findMany({
+      where: { status: 'ARCHIVED' }
+    });
+
+    return {
+      Correspondence: correspondences.map(r => ({
+        id: r.id,
+        trackingNumber: r.trackingNumber,
+        sender: r.sender,
+        recipient: r.recipient,
+        subject: r.subject,
+        status: r.status,
+        archivedAt: r.archivedAt?.toISOString() || r.deletedAt?.toISOString() || r.updatedAt.toISOString(),
+        archivedBy: r.archivedBy || r.deletedBy || 'System',
+      })),
+      Documents: documents.map(r => ({
+        id: r.id,
+        fileName: r.fileName,
+        sizeKb: r.sizeKb,
+        category: r.category,
+        archivedAt: r.deletedAt?.toISOString() || r.updatedAt.toISOString(),
+        archivedBy: r.deletedBy || 'System',
+      })),
+      Printer: printers.map(r => ({
+        id: r.id,
+        name: r.name,
+        model: r.model,
+        ipAddress: r.ipAddress,
+        archivedAt: r.deletedAt?.toISOString() || r.updatedAt.toISOString(),
+        archivedBy: r.deletedBy || 'System',
+      })),
+      Inventory: inventory.map(r => ({
+        id: r.id,
+        itemName: r.itemName,
+        sku: r.sku,
+        stock: r.stock,
+        archivedAt: r.deletedAt?.toISOString() || r.updatedAt.toISOString(),
+        archivedBy: r.deletedBy || 'System',
+      })),
+      Subscriptions: subscriptions.map(r => ({
+        id: r.id,
+        serviceName: r.serviceName,
+        cost: r.cost,
+        dueDate: r.dueDate,
+        archivedAt: r.deletedAt?.toISOString() || r.updatedAt.toISOString(),
+        archivedBy: r.deletedBy || 'System',
+      })),
+      Fuel: fuel.map(r => ({
+        id: r.id,
+        vehiclePlate: r.vehicle?.plate || 'Unknown',
+        driver: r.driver,
+        liters: r.liters,
+        totalCost: r.totalCost,
+        archivedAt: r.deletedAt?.toISOString() || r.updatedAt.toISOString(),
+        archivedBy: r.deletedBy || 'System',
+      }))
+    };
+  }
+
+  async purgeRecords(moduleName: string, ids: string[], confirmation: string, userId: string) {
+    await this.checkSuperAdmin(userId);
+
+    if (!confirmation) {
+      throw new BadRequestException('Security confirmation command string required.');
+    }
+
+    const cleanModule = moduleName.trim().toUpperCase();
+    const count = ids.length;
+
+    // Check confirmation matches: DELETE <count> <MODULE> RECORDS
+    const expected = `DELETE ${count} ${cleanModule} RECORDS`;
+    const cleanConfirm = confirmation.trim().toUpperCase();
+    if (cleanConfirm !== expected) {
+      throw new BadRequestException(`Security validation failed. Expected: "${expected}", but got: "${confirmation}"`);
+    }
+
+    let purgedCount = 0;
+
+    if (moduleName === 'Correspondence') {
+      const res = await this.prisma.correspondence.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'Documents') {
+      const res = await this.prisma.document.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'Printer' || moduleName === 'Printers') {
+      const res = await this.prisma.printer.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'Inventory' || moduleName === 'InventoryItem') {
+      const res = await this.prisma.inventoryItem.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'Subscriptions') {
+      const res = await this.prisma.subscription.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'Fuel' || moduleName === 'FuelLog') {
+      const res = await this.prisma.fuelLog.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'Invitations') {
+      const res = await this.prisma.invitation.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'UserSession' || moduleName === 'Sessions') {
+      const res = await this.prisma.userSession.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'Notifications') {
+      const res = await this.prisma.notification.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else if (moduleName === 'AuditLog' || moduleName === 'AuditLogs') {
+      const res = await this.prisma.auditLog.deleteMany({
+        where: { id: { in: ids } }
+      });
+      purgedCount = res.count;
+    } else {
+      throw new BadRequestException(`Module "${moduleName}" does not support permanent purge operations.`);
+    }
+
+    // Write BULK_PURGE audit log
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'BULK_PURGE',
+        module: moduleName,
+        entityType: moduleName,
+        oldValues: JSON.stringify({ ids, count }),
+        newValues: JSON.stringify({ purgedAt: new Date(), purgedBy: userId, confirmationMessage: confirmation })
+      }
+    });
+
+    return { success: true, count: purgedCount };
+  }
+
+  async getPurgeHistory(userId: string) {
+    await this.checkSuperAdmin(userId);
+    const logs = await this.prisma.auditLog.findMany({
+      where: {
+        action: 'BULK_PURGE'
+      },
+      orderBy: { timestamp: 'desc' },
+      include: { user: true }
+    });
+    return logs.map(l => {
+      let parsedOld: any = {};
+      try {
+        parsedOld = JSON.parse(l.oldValues || '{}');
+      } catch {}
+      return {
+        id: l.id,
+        userName: l.user?.name || 'System Admin',
+        userEmail: l.user?.email || 'admin@ooms.com',
+        module: l.module,
+        timestamp: l.timestamp.toISOString(),
+        recordCount: parsedOld.count || 0,
+        recordIds: parsedOld.ids || []
+      };
+    });
+  }
+
+  async bulkAction(p: {
+    moduleName: string;
+    action: 'archive' | 'restore' | 'export' | 'delete';
+    ids: string[];
+    userId: string;
+  }) {
+    const { moduleName, action, ids, userId } = p;
+    const count = ids.length;
+
+    // Permissions check
+    if (action === 'archive') {
+      if (moduleName === 'Correspondence') await this.checkPermission(userId, 'CORRESPONDENCE_DELETE');
+      else if (moduleName === 'Subscriptions') await this.checkPermission(userId, 'subscriptions.manage');
+      else if (moduleName === 'Inventory') await this.checkPermission(userId, 'inventory.delete');
+      else if (moduleName === 'Fuel') await this.checkPermission(userId, 'fleet.manage');
+      else if (moduleName === 'Documents') await this.checkPermission(userId, 'documents.delete');
+      else if (moduleName === 'Printer' || moduleName === 'Printers') await this.checkPermission(userId, 'PRINTER_DELETE');
+    } else if (action === 'restore') {
+      if (moduleName === 'Correspondence') await this.checkPermission(userId, 'CORRESPONDENCE_RESTORE');
+      else if (moduleName === 'Subscriptions') await this.checkPermission(userId, 'subscriptions.manage');
+      else if (moduleName === 'Inventory') await this.checkPermission(userId, 'inventory.edit');
+      else if (moduleName === 'Fuel') await this.checkPermission(userId, 'fleet.manage');
+      else if (moduleName === 'Documents') await this.checkPermission(userId, 'documents.edit');
+      else if (moduleName === 'Printer' || moduleName === 'Printers') await this.checkPermission(userId, 'PRINTER_EDIT');
+    } else if (action === 'delete') {
+      if (moduleName === 'Correspondence') await this.checkPermission(userId, 'CORRESPONDENCE_DELETE');
+      else if (moduleName === 'Subscriptions') await this.checkPermission(userId, 'subscriptions.manage');
+      else if (moduleName === 'Inventory') await this.checkPermission(userId, 'inventory.delete');
+      else if (moduleName === 'Fuel') await this.checkPermission(userId, 'fleet.manage');
+      else if (moduleName === 'Documents') await this.checkPermission(userId, 'documents.delete');
+      else if (moduleName === 'Printer' || moduleName === 'Printers') await this.checkPermission(userId, 'PRINTER_DELETE');
+    }
+
+    if (action === 'archive') {
+      if (moduleName === 'Correspondence') {
+        await this.prisma.correspondence.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            status: 'Archived',
+            deletedAt: new Date(),
+            deletedBy: userId,
+            archivedAt: new Date(),
+            archivedBy: userId,
+          }
+        });
+      } else if (moduleName === 'Documents') {
+        await this.prisma.document.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+          }
+        });
+      } else if (moduleName === 'Printer' || moduleName === 'Printers') {
+        await this.prisma.printer.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+          }
+        });
+      } else if (moduleName === 'Inventory' || moduleName === 'InventoryItem') {
+        await this.prisma.inventoryItem.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+          }
+        });
+      } else if (moduleName === 'Subscriptions') {
+        await this.prisma.subscription.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+          }
+        });
+      } else if (moduleName === 'Fuel' || moduleName === 'FuelLog') {
+        await this.prisma.fuelLog.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: new Date(),
+            deletedBy: userId,
+          }
+        });
+      } else {
+        throw new BadRequestException(`Module "${moduleName}" does not support bulk archiving.`);
+      }
+
+      // Audit Log as requested by Rule 6
+      await this.prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'BULK_ARCHIVE',
+          module: moduleName,
+          entityType: moduleName,
+          oldValues: JSON.stringify({ ids, count }),
+          newValues: JSON.stringify({ status: 'Archived', archivedAt: new Date(), archivedBy: userId })
+        }
+      });
+
+    } else if (action === 'restore') {
+      if (moduleName === 'Correspondence') {
+        await this.prisma.correspondence.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            status: 'Draft',
+            deletedAt: null,
+            deletedBy: null,
+            archivedAt: null,
+            archivedBy: null,
+          }
+        });
+      } else if (moduleName === 'Documents') {
+        await this.prisma.document.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: null,
+            deletedBy: null,
+          }
+        });
+      } else if (moduleName === 'Printer' || moduleName === 'Printers') {
+        await this.prisma.printer.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: null,
+            deletedBy: null,
+          }
+        });
+      } else if (moduleName === 'Inventory' || moduleName === 'InventoryItem') {
+        await this.prisma.inventoryItem.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: null,
+            deletedBy: null,
+          }
+        });
+      } else if (moduleName === 'Subscriptions') {
+        await this.prisma.subscription.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: null,
+            deletedBy: null,
+          }
+        });
+      } else if (moduleName === 'Fuel' || moduleName === 'FuelLog') {
+        await this.prisma.fuelLog.updateMany({
+          where: { id: { in: ids } },
+          data: {
+            deletedAt: null,
+            deletedBy: null,
+          }
+        });
+      } else {
+        throw new BadRequestException(`Module "${moduleName}" does not support bulk restoration.`);
+      }
+
+      // Audit Log as requested by Rule 6
+      await this.prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'BULK_RESTORE',
+          module: moduleName,
+          entityType: moduleName,
+          oldValues: JSON.stringify({ ids, count }),
+          newValues: JSON.stringify({ restoredAt: new Date() })
+        }
+      });
+
+    } else if (action === 'export') {
+      // Audit Log as requested by Rule 6
+      await this.prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'BULK_EXPORT',
+          module: moduleName,
+          entityType: moduleName,
+          oldValues: JSON.stringify({ ids, count }),
+          newValues: JSON.stringify({ exportedAt: new Date() })
+        }
+      });
+    } else if (action === 'delete') {
+      if (moduleName === 'Correspondence') {
+        await this.prisma.correspondence.deleteMany({
+          where: { id: { in: ids } }
+        });
+      } else if (moduleName === 'Documents') {
+        await this.prisma.document.deleteMany({
+          where: { id: { in: ids } }
+        });
+      } else if (moduleName === 'Printer' || moduleName === 'Printers') {
+        await this.prisma.printer.deleteMany({
+          where: { id: { in: ids } }
+        });
+      } else if (moduleName === 'Inventory' || moduleName === 'InventoryItem') {
+        await this.prisma.inventoryItem.deleteMany({
+          where: { id: { in: ids } }
+        });
+      } else if (moduleName === 'Subscriptions') {
+        await this.prisma.subscription.deleteMany({
+          where: { id: { in: ids } }
+        });
+      } else if (moduleName === 'Fuel' || moduleName === 'FuelLog') {
+        await this.prisma.fuelLog.deleteMany({
+          where: { id: { in: ids } }
+        });
+      } else {
+        throw new BadRequestException(`Module "${moduleName}" does not support bulk deletion.`);
+      }
+
+      // Audit Log as requested by Rule 6
+      await this.prisma.auditLog.create({
+        data: {
+          userId,
+          action: 'BULK_DELETE',
+          module: moduleName,
+          entityType: moduleName,
+          oldValues: JSON.stringify({ ids, count }),
+          newValues: JSON.stringify({ deletedAt: new Date() })
+        }
+      });
+    }
+
+    return { success: true, count };
+  }
+
+  async productionCleanup(userId: string) {
+    await this.checkSuperAdmin(userId);
+
+    const demoEmails = ['admin@ooms.com', 'manager@ooms.com', 'officer@ooms.com', 'viewer@ooms.com'];
+    const demoUsers = await this.prisma.user.findMany({
+      where: { email: { in: demoEmails } }
+    });
+    const demoUserIds = demoUsers.map(u => u.id);
+
+    // Clean tables and collect removed counts
+    const removedInventoryTransactions = await this.prisma.inventoryTransaction.deleteMany({});
+    const removedFuelLogs = await this.prisma.fuelLog.deleteMany({});
+    const removedPrintJobs = await this.prisma.printJob.deleteMany({});
+    const removedPrinterAlerts = await this.prisma.printerAlert.deleteMany({});
+    const removedPrinterMetrics = await this.prisma.printerUsageMetric.deleteMany({});
+    const removedPrinterStatuses = await this.prisma.printerStatus.deleteMany({});
+    const removedPrinters = await this.prisma.printer.deleteMany({});
+    const removedSubscriptions = await this.prisma.subscription.deleteMany({});
+    const removedCorrespondences = await this.prisma.correspondence.deleteMany({});
+    const removedDocuments = await this.prisma.document.deleteMany({});
+    const removedInventoryItems = await this.prisma.inventoryItem.deleteMany({});
+    const removedVehicles = await this.prisma.vehicle.deleteMany({});
+    const removedUpcomingTasks = await this.prisma.upcomingTask.deleteMany({});
+    const removedActionAlerts = await this.prisma.actionAlert.deleteMany({});
+    const removedNotifications = await this.prisma.notification.deleteMany({});
+
+    // Also remove any test sessions (NOT current user session) and demo invitations
+    const removedUserSessions = await this.prisma.userSession.deleteMany({
+      where: { NOT: { userId } }
+    });
+
+    const removedInvitations = await this.prisma.invitation.deleteMany({
+      where: { email: { in: demoEmails } }
+    });
+
+    // Remove audit logs of demo users (but keep real audit logs active)
+    const removedAuditLogsList = await this.prisma.auditLog.deleteMany({
+      where: { userId: { in: demoUserIds } }
+    });
+
+    // Remove the demo users themselves
+    const removedUsers = await this.prisma.user.deleteMany({
+      where: { id: { in: demoUserIds } }
+    });
+
+    // Compute remaining items
+    const [
+      remainingUsers,
+      remainingInvitations,
+      remainingSuperAdmins,
+      finalCorrespondences,
+      finalSubscriptions,
+      finalInventoryItems,
+      finalVehicles,
+      finalFuelLogs,
+      finalDocuments
+    ] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.invitation.count(),
+      this.prisma.user.count({ where: { role: 'SUPER_ADMIN' } }),
+      this.prisma.correspondence.count(),
+      this.prisma.subscription.count(),
+      this.prisma.inventoryItem.count(),
+      this.prisma.vehicle.count(),
+      this.prisma.fuelLog.count(),
+      this.prisma.document.count()
+    ]);
+
+    const tablesCleared = [
+      'Correspondence',
+      'Document',
+      'InventoryItem',
+      'InventoryTransaction',
+      'Vehicle',
+      'FuelLog',
+      'Subscription',
+      'Printer',
+      'PrinterStatus',
+      'PrinterAlert',
+      'PrinterUsageMetric',
+      'Notification',
+      'UpcomingTask',
+      'ActionAlert',
+      'PrintJob'
+    ];
+
+    const recordsRemoved = {
+      Correspondence: removedCorrespondences.count,
+      Document: removedDocuments.count,
+      InventoryItem: removedInventoryItems.count,
+      InventoryTransaction: removedInventoryTransactions.count,
+      Vehicle: removedVehicles.count,
+      FuelLog: removedFuelLogs.count,
+      Subscription: removedSubscriptions.count,
+      Printer: removedPrinters.count,
+      PrinterStatus: removedPrinterStatuses.count,
+      PrinterAlert: removedPrinterAlerts.count,
+      PrinterUsageMetric: removedPrinterMetrics.count,
+      Notification: removedNotifications.count,
+      UpcomingTask: removedUpcomingTasks.count,
+      ActionAlert: removedActionAlerts.count,
+      PrintJob: removedPrintJobs.count,
+      UserSession: removedUserSessions.count,
+      Invitation: removedInvitations.count,
+      AuditLog: removedAuditLogsList.count,
+      User: removedUsers.count
+    };
+
+    const totalRemoved = Object.values(recordsRemoved).reduce((a, b) => a + b, 0);
+
+    const report = {
+      tablesCleared,
+      recordsRemoved,
+      totalRemoved,
+      remainingUsers,
+      remainingInvitations,
+      remainingSuperAdmins,
+      removedCorrespondenceCount: removedCorrespondences.count,
+      removedDocumentCount: removedDocuments.count,
+      removedPrintJobCount: removedPrintJobs.count,
+      removedInvitationCount: removedInvitations.count,
+      removedSessionCount: removedUserSessions.count,
+      removedInventoryTransactionCount: removedInventoryTransactions.count,
+      removedAuditLogCount: removedAuditLogsList.count,
+      removedUserCount: removedUsers.count,
+      demoUsersRemoved: demoUsers.map(u => ({ id: u.id, email: u.email, name: u.name })),
+      finalDashboardCounts: {
+        correspondence: finalCorrespondences,
+        subscriptions: finalSubscriptions,
+        inventory: finalInventoryItems,
+        vehicles: finalVehicles,
+        fuelLogs: finalFuelLogs,
+        documents: finalDocuments
+      }
+    };
+
+    // Log the successful production-wide cleanup to security audit logs
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action: 'PRODUCTION_CLEANUP',
+        module: 'Governance',
+        entityType: 'System',
+        newValues: JSON.stringify(report)
+      }
+    });
+
+    return {
+      success: true,
+      report
+    };
   }
 }

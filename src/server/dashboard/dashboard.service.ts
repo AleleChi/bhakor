@@ -41,6 +41,7 @@ export class DashboardService {
     const fuelLogs = await this.prisma.fuelLog.findMany({ where: fuelFilter });
     const printers = await this.prisma.printer.findMany({ where: printFilter });
     const documents = await this.prisma.document.findMany({ where: docFilter });
+    const vehicles = await this.prisma.vehicle.findMany({ where: { deletedAt: null } });
 
     const totalFuelSpend = fuelLogs.reduce((acc, log) => acc + log.totalCost, 0);
     const activeSubs = subscriptions.filter(s => s.status === 'Active' || s.status === 'Expiring');
@@ -52,49 +53,57 @@ export class DashboardService {
     const kpis = [
       {
         title: 'Correspondence Dispatch',
-        value: correspondences.length.toLocaleString(),
+        value: correspondences.length === 0 ? '0 Records' : correspondences.length.toString(),
         trend: 'up' as const,
-        change: '+12.4%',
+        change: correspondences.length === 0 ? '0%' : '+12.4%',
         icon: 'Mail',
         description: 'Total correspondence recorded (Active / Safe)',
       },
       {
         title: 'Active Subscriptions',
-        value: activeSubs.length.toString(),
+        value: activeSubs.length === 0 ? '0 Records' : activeSubs.length.toString(),
         trend: 'neutral' as const,
-        change: `${subscriptions.filter(s => s.status === 'Expiring').length} expiring soon`,
+        change: subscriptions.length === 0 ? '0 expiring' : `${subscriptions.filter(s => s.status === 'Expiring').length} expiring soon`,
         icon: 'Calendar',
         description: 'Subscriptions currently active across cloud vectors.',
       },
       {
         title: 'Secure Stock Inventory',
-        value: inventory.length.toLocaleString(),
+        value: inventory.length === 0 ? '0 Records' : inventory.length.toLocaleString(),
         trend: 'neutral' as const,
-        change: `${lowStock.length} below threshold`,
+        change: inventory.length === 0 ? '0 low stock' : `${lowStock.length} below threshold`,
         icon: 'Package',
         description: 'Tracked SKU inventory lines with custom reorder levels.',
       },
       {
+        title: 'Active Vehicles fleet',
+        value: vehicles.length === 0 ? '0 Records' : `${vehicles.length} Vehicles`,
+        trend: 'neutral' as const,
+        change: vehicles.length === 0 ? '0%' : 'All nominal',
+        icon: 'Truck',
+        description: 'Licensed operating administrative vehicles.',
+      },
+      {
         title: 'Fuel Expenditure Spend',
-        value: `$${Math.floor(totalFuelSpend).toLocaleString()}`,
+        value: fuelLogs.length === 0 ? '0 Records' : `$${Math.floor(totalFuelSpend).toLocaleString()}`,
         trend: 'up' as const,
         change: fuelLogs.length > 0 ? `Avg: $${Math.floor(totalFuelSpend / fuelLogs.length)}/ref` : '0%',
         icon: 'Fuel',
         description: 'Aggregated logistics fleet operational fuel log spending.',
       },
       {
-        title: 'Printer Volumes fleet',
-        value: `${(totalPrintMonthPages / 1000).toFixed(1)}k`,
+        title: 'Printer Volumes',
+        value: printers.length === 0 ? '0 Records' : `${(totalPrintMonthPages / 1000).toFixed(1)}k`,
         trend: 'up' as const,
-        change: 'Normal Load',
+        change: printers.length === 0 ? 'Offline' : 'Normal Load',
         icon: 'Printer',
         description: 'Consolidated page volumes printed throughout the facility.',
       },
       {
         title: 'Document Repository size',
-        value: `${(totalDocsSizeMb / 1024).toFixed(2)} GB`,
+        value: documents.length === 0 ? '0 Records' : `${(totalDocsSizeMb / 1024).toFixed(2)} GB`,
         trend: 'neutral' as const,
-        change: `${documents.length} files secure`,
+        change: documents.length === 0 ? '0 files secure' : `${documents.length} files secure`,
         icon: 'FileText',
         description: 'Certified policy, invoice, and classification-audit repository.',
       },
@@ -206,16 +215,17 @@ export class DashboardService {
             gte: new Date(`2026-0${i+1}-01T00:00:00Z`),
             lt: new Date(`2026-0${i+2}-01T00:00:00Z`),
           },
+          deletedAt: null
         },
       });
 
       const subCostAgg = await this.prisma.subscription.aggregate({
         _sum: { cost: true },
+        where: { deletedAt: null }
       });
 
-      // Spread realistically
-      const subSpend = Math.floor((subCostAgg._sum.cost || 5000) / 12);
-      const fuelSpend = Math.floor(fuelCostAgg._sum.totalCost || 200 + (i * 120));
+      const subSpend = subCostAgg._sum.cost ? Math.floor(subCostAgg._sum.cost / 12) : 0;
+      const fuelSpend = fuelCostAgg._sum.totalCost ? Math.floor(fuelCostAgg._sum.totalCost) : 0;
 
       data.push({
         name: months[i],
@@ -232,7 +242,7 @@ export class DashboardService {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     const data = [];
 
-    const plateFilter: any = {};
+    const plateFilter: any = { deletedAt: null };
     if (vehiclePlate) {
       const vehicle = await this.prisma.vehicle.findUnique({
         where: { plate: vehiclePlate },
@@ -259,7 +269,7 @@ export class DashboardService {
 
       data.push({
         name: months[i],
-        cost: Math.floor(aggregate._sum.totalCost || 120 + i * 45),
+        cost: aggregate._sum.totalCost ? Math.floor(aggregate._sum.totalCost) : 0,
       });
     }
 
@@ -268,24 +278,24 @@ export class DashboardService {
 
   async getInventoryVelocity() {
     const lowStock = await this.prisma.inventoryItem.findMany({
-      where: { status: { in: ['Low Stock', 'Out of Stock'] } },
+      where: { status: { in: ['Low Stock', 'Out of Stock'] }, deletedAt: null },
       take: 5,
     });
 
     const highStock = await this.prisma.inventoryItem.findMany({
-      where: { status: 'In Stock' },
+      where: { status: 'In Stock', deletedAt: null },
       take: 5,
     });
 
     const fast = lowStock.map(item => ({
       name: item.itemName.split(' - ')[0],
-      volume: Math.floor(item.minThreshold * 1.5 - item.stock),
+      volume: Math.max(0, Math.floor(item.minThreshold * 1.5 - item.stock)),
       type: 'Fast-Moving',
     }));
 
     const slow = highStock.map(item => ({
       name: item.itemName.split(' - ')[0],
-      volume: Math.floor(item.stock * 0.15),
+      volume: Math.max(0, Math.floor(item.stock * 0.15)),
       type: 'Slow-Moving',
     }));
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../lib/api';
 import { 
   Mail, 
   Send, 
@@ -45,68 +46,7 @@ export interface CorrespondenceItem {
   emailHistory: Array<{ subject: string; body: string; date: string; recipient: string; sender: string }>;
 }
 
-const INITIAL_CORRESPONDENCE: CorrespondenceItem[] = [
-  {
-    id: "COR-2026-001",
-    refNo: "FGN/MOT/COR-90382",
-    subject: "Proposed Aviation Hanger Standard Operating Procedures",
-    sender: "Director-General of Civil Aviation Authority",
-    recipient: "Registry Operations Division Director",
-    dispatchDate: "2026-06-10",
-    direction: "Incoming",
-    classification: "Urgent",
-    routingStatus: "Processing",
-    linkedDocketName: "Aviation_Hanger_SOP_v1.1.pdf",
-    timelineLogs: [
-      { status: "Received", date: "2026-06-10 09:15", details: "Physical hand-delivery log docket verified by Annex Registry clerk." },
-      { status: "Logged", date: "2026-06-10 10:30", details: "Metadata catalog indexing completed. Clearance level tagged: Restricted." },
-      { status: "Routing Assigned", date: "2026-06-10 11:45", details: "Assigned to Aviation Operations Unit for tech audit review." }
-    ],
-    emailHistory: []
-  },
-  {
-    id: "COR-2026-002",
-    refNo: "OOMS/PROC/CTR-88401",
-    subject: "Certified Procurement Order Handoff - Customs Clearing",
-    sender: "OOMS Logistics Desk Authority",
-    recipient: "Comptroller General of Nigeria Customs Service",
-    dispatchDate: "2026-06-08",
-    direction: "Outgoing",
-    classification: "Confidential",
-    routingStatus: "Completed",
-    linkedDocketName: "Customs_Clearance_Auth_2026.docx",
-    timelineLogs: [
-      { status: "Received", date: "2026-06-08 14:00", details: "File compilation approved for external transit dispatch." },
-      { status: "Logged", date: "2026-06-08 14:45", details: "Outbound carrier tracking barcoded. Airway bill registered." },
-      { status: "Completed", date: "2026-06-09 16:30", details: "Acknowledged receipt voucher uploaded back from customs registry." }
-    ],
-    emailHistory: [
-      {
-        subject: "Outbound Dispatch Notification: OOMS/PROC/CTR-88401",
-        body: "Ref Customs Clearance: This email confirms transit delivery of certified procurement cargo manifests to Customs Office.",
-        date: "2026-06-08 15:00",
-        recipient: "customs-comptroller@customs.gov.ng",
-        sender: "procurement-desk@ooms.gov.ng"
-      }
-    ]
-  },
-  {
-    id: "COR-2026-003",
-    refNo: "OOMS/FIN/CIR-1102",
-    subject: "Mandatory Treasury Treasury Singe Account (TSA) Recalibration Circular",
-    sender: "Director of Accounts (Finance)",
-    recipient: "All Department Heads and Regional Supervisors",
-    dispatchDate: "2026-06-11",
-    direction: "Internal",
-    classification: "Routine",
-    routingStatus: "Logged",
-    timelineLogs: [
-      { status: "Received", date: "2026-06-11 08:30", details: "Circular drafted in sovereign central ledger." },
-      { status: "Logged", date: "2026-06-11 09:00", details: "Broadcast routing list populated. Awaiting executive signature." }
-    ],
-    emailHistory: []
-  }
-];
+const INITIAL_CORRESPONDENCE: CorrespondenceItem[] = [];
 
 export default function CorrespondenceWorkspace({ 
   globalDept, 
@@ -137,6 +77,136 @@ export default function CorrespondenceWorkspace({
     linkedDocketName: ''
   });
 
+  // Edit modal state
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  const [editingItem, setEditingItem] = useState<CorrespondenceItem | null>(null);
+  const [editForm, setEditForm] = useState({
+    subject: '',
+    sender: '',
+    recipient: '',
+    direction: 'Incoming' as 'Incoming' | 'Outgoing' | 'Internal',
+    classification: 'Routine' as 'Urgent' | 'Confidential' | 'Routine',
+    routingStatus: 'Received' as any
+  });
+
+  // SUPER ADMIN detect
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
+
+  // Selection variables for bulk operations
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredItems.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredItems.map(item => item.id));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleArchiveItem = async (itemId: string) => {
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const response = await fetch(`/api/registry/transition`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          moduleName: 'Correspondence',
+          id: itemId,
+          status: 'Archived',
+          remarks: 'Sovereign administrative archiving override.'
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Correspondence archived successfully.');
+        fetchItems();
+      } else {
+        const err = await response.json();
+        throw new Error(err.message || 'Archiving failed');
+      }
+    } catch (err: any) {
+      toast.error(`Archiving failed: ${err.message}`);
+    }
+  };
+
+  const handleRestoreItem = async (itemId: string) => {
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const response = await fetch(`/api/registry/transition`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          moduleName: 'Correspondence',
+          id: itemId,
+          status: 'Draft',
+          remarks: 'Sovereign administrative restoration override.'
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Correspondence restored successfully.');
+        fetchItems();
+      } else {
+        const err = await response.json();
+        throw new Error(err.message || 'Restoration failed');
+      }
+    } catch (err: any) {
+      toast.error(`Restoration failed: ${err.message}`);
+    }
+  };
+
+  const handleBulkAction = async (action: 'archive' | 'restore' | 'delete') => {
+    if (selectedIds.length === 0) {
+      toast.error('No items highlighted for bulk operational override.');
+      return;
+    }
+
+    if (action === 'delete') {
+      if (!window.confirm(`Are you absolutely sure you want to permanently delete these ${selectedIds.length} records? This is completely irreversible.`)) {
+        return;
+      }
+    }
+
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const response = await fetch(`/api/registry/bulk-action`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          moduleName: 'Correspondence',
+          action,
+          ids: selectedIds
+        })
+      });
+
+      if (response.ok) {
+        toast.success(`Bulk ${action} executed successfully.`);
+        setSelectedIds([]);
+        fetchItems();
+      } else {
+        const err = await response.json();
+        throw new Error(err.message || `Bulk ${action} failed`);
+      }
+    } catch (err: any) {
+      toast.error(`Bulk ${action} execution failed: ${err.message}`);
+    }
+  };
+
   // Resend Email composer state
   const [emailForm, setEmailForm] = useState({
     templateId: 'custom',
@@ -145,15 +215,61 @@ export default function CorrespondenceWorkspace({
     body: ''
   });
 
-  useEffect(() => {
-    const saved = localStorage.getItem('ooms_correspondence_register');
-    if (saved) {
-      setItems(JSON.parse(saved));
-    } else {
-      localStorage.setItem('ooms_correspondence_register', JSON.stringify(INITIAL_CORRESPONDENCE));
-      setItems(INITIAL_CORRESPONDENCE);
+  const mapServerItemToClient = (r: any): CorrespondenceItem => ({
+    id: r.id,
+    refNo: r.trackingNumber || r.refNo || '',
+    subject: r.subject,
+    sender: r.sender,
+    recipient: r.recipient,
+    dispatchDate: (r.date || r.dispatchDate || '').split('T')[0] || new Date().toISOString().split('T')[0],
+    direction: r.type || r.direction || 'Incoming',
+    classification: r.classification || 'Routine',
+    routingStatus: r.status || r.routingStatus || 'Received',
+    linkedDocketName: r.linkedDocketName,
+    timelineLogs: r.timelineLogs || [
+      { status: r.status || 'Received', date: (r.date || r.dispatchDate || '').replace('T', ' ').slice(0, 16) || new Date().toISOString().replace('T', ' ').slice(0, 16), details: 'Initial record sync' }
+    ],
+    emailHistory: r.emailHistory || []
+  });
+
+  const fetchItems = async () => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const response = await fetch(`/api/list?module=Correspondence&page=1&limit=100`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        const serverItems = (result.data || []).map(mapServerItemToClient);
+        setItems(serverItems);
+      } else {
+        setItems([]);
+      }
+    } catch (error) {
+      console.error('Error fetching correspondence items from PostgreSQL:', error);
+      setItems([]);
+      toast.error('Unable to establish connection with PostgreSQL repository. Direct offline mode active.');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    // Audit user scope
+    try {
+      const cached = localStorage.getItem('ooms_user');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setIsSuperAdmin(parsed.role === 'SUPER_ADMIN');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    fetchItems();
   }, []);
 
   const persistItems = (newItems: CorrespondenceItem[]) => {
@@ -162,7 +278,7 @@ export default function CorrespondenceWorkspace({
   };
 
   // Milestone triggers
-  const triggerNextMilestone = (itemId: string) => {
+  const triggerNextMilestone = async (itemId: string) => {
     const nextMap: Record<CorrespondenceItem['routingStatus'], CorrespondenceItem['routingStatus']> = {
       'Received': 'Logged',
       'Logged': 'Routing Assigned',
@@ -172,9 +288,41 @@ export default function CorrespondenceWorkspace({
       'Archived': 'Archived'
     };
 
+    const targetItem = items.find(p => p.id === itemId);
+    if (!targetItem) return;
+
+    const nextStatus = nextMap[targetItem.routingStatus];
+
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const response = await fetch(`/api/registry/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          moduleName: 'Correspondence',
+          id: itemId,
+          payload: {
+            status: nextStatus
+          }
+        })
+      });
+
+      if (response.ok) {
+        toast.success(`Timeline escalated successfully on server to ${nextStatus}.`);
+        fetchItems();
+        return;
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (err) {
+      console.warn('Fallback to local milestone change:', err);
+    }
+
     const updated = items.map(p => {
       if (p.id === itemId) {
-        const nextStatus = nextMap[p.routingStatus];
         return {
           ...p,
           routingStatus: nextStatus,
@@ -196,7 +344,7 @@ export default function CorrespondenceWorkspace({
   };
 
   // Submit quick Intake form
-  const handleAddIntake = (e: React.FormEvent) => {
+  const handleAddIntake = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDocket.subject || !newDocket.sender || !newDocket.recipient) {
       toast.error('Specify all required fields for intake ledger entry.');
@@ -206,28 +354,65 @@ export default function CorrespondenceWorkspace({
     const uniqueId = `COR-2026-${String(items.length + 1).padStart(3, '0')}`;
     const randRef = `FGN/OOMS/Ref-${Math.floor(10000 + Math.random() * 90000)}`;
 
-    const newItem: CorrespondenceItem = {
-      id: uniqueId,
-      refNo: randRef,
-      subject: newDocket.subject,
-      sender: newDocket.sender,
-      recipient: newDocket.recipient,
-      dispatchDate: new Date().toISOString().split('T')[0],
-      direction: newDocket.direction,
-      classification: newDocket.classification,
-      routingStatus: 'Received',
-      linkedDocketName: newDocket.linkedDocketName || undefined,
-      timelineLogs: [
-        {
-          status: 'Received',
-          date: new Date().toISOString().replace('T', ' ').slice(0, 16),
-          details: 'Initial intake logging completed successfully. Assigned base ledger ID.'
-        }
-      ],
-      emailHistory: []
-    };
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const payload = {
+        trackingNumber: randRef,
+        sender: newDocket.sender,
+        recipient: newDocket.recipient,
+        subject: newDocket.subject,
+        status: 'Received',
+        type: newDocket.direction,
+        location: globalLoc || 'Abuja HQ',
+        department: globalDept || 'Registry Operations',
+        classification: newDocket.classification,
+        linkedDocketName: newDocket.linkedDocketName || undefined
+      };
 
-    persistItems([newItem, ...items]);
+      const response = await fetch(`/api/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          moduleName: 'Correspondence',
+          payload
+        })
+      });
+
+      if (response.ok) {
+        toast.success(`Ledger registered successfully on server. Ref: ${randRef}`);
+        fetchItems();
+      } else {
+        const errData = await response.json();
+        throw new Error(errData.message || 'Server rejected creation.');
+      }
+    } catch (err: any) {
+      toast.error(`Local logging fallback activated: ${err.message}`);
+      const newItem: CorrespondenceItem = {
+        id: `local-${Date.now()}`,
+        refNo: randRef,
+        subject: newDocket.subject,
+        sender: newDocket.sender,
+        recipient: newDocket.recipient,
+        dispatchDate: new Date().toISOString().split('T')[0],
+        direction: newDocket.direction,
+        classification: newDocket.classification,
+        routingStatus: 'Received',
+        linkedDocketName: newDocket.linkedDocketName || undefined,
+        timelineLogs: [
+          {
+            status: 'Received',
+            date: new Date().toISOString().replace('T', ' ').slice(0, 16),
+            details: 'Initial intake logging completed successfully. Assigned base ledger ID.'
+          }
+        ],
+        emailHistory: []
+      };
+      persistItems([newItem, ...items]);
+    }
+
     setIntakeModalOpen(false);
     setNewDocket({
       subject: '',
@@ -237,8 +422,94 @@ export default function CorrespondenceWorkspace({
       classification: 'Routine',
       linkedDocketName: ''
     });
+  };
 
-    toast.success(`Ledger registered: Ref: ${randRef}`);
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const response = await fetch(`/api/registry/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          moduleName: 'Correspondence',
+          id: editingItem.id,
+          payload: {
+            subject: editForm.subject,
+            sender: editForm.sender,
+            recipient: editForm.recipient,
+            type: editForm.direction,
+            classification: editForm.classification,
+            status: editForm.routingStatus
+          }
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Correspondence updated successfully on server.');
+        setEditModalOpen(false);
+        fetchItems();
+      } else {
+        const err = await response.json();
+        throw new Error(err.message || 'Update failed');
+      }
+    } catch (err: any) {
+      toast.error(`Local fallback edit applied: ${err.message}`);
+      const updated = items.map(item => {
+        if (item.id === editingItem.id) {
+          return {
+            ...item,
+            subject: editForm.subject,
+            sender: editForm.sender,
+            recipient: editForm.recipient,
+            direction: editForm.direction,
+            classification: editForm.classification,
+            routingStatus: editForm.routingStatus
+          };
+        }
+        return item;
+      });
+      persistItems(updated);
+      setEditModalOpen(false);
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!window.confirm('Are you absolutely sure you want to delete this docket entry? This is an irreversible forensic action.')) return;
+
+    try {
+      const token = localStorage.getItem('ooms_token');
+      const response = await fetch(`/api/registry/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          moduleName: 'Correspondence',
+          id: itemId
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Docket entry deleted successfully from central repository.');
+        fetchItems();
+      } else {
+        const err = await response.json();
+        throw new Error(err.message || 'Delete failed.');
+      }
+    } catch (err: any) {
+      toast.error(`Local fallback deletion applied: ${err.message}`);
+      const updated = items.filter(item => item.id !== itemId);
+      persistItems(updated);
+    }
+    setDrawerOpen(false);
+    setSelectedItem(null);
   };
 
   // Handle template selection change
@@ -438,11 +709,57 @@ export default function CorrespondenceWorkspace({
           </div>
         </div>
 
+        {/* SUPER ADMIN SOVEREIGN BULK OPERATIONS TOOLBAR */}
+        {isSuperAdmin && selectedIds.length > 0 && (
+          <div className="bg-slate-900 border border-slate-800 text-white p-3.5 mb-4 rounded-xl flex items-center justify-between font-mono text-[10px] uppercase font-black tracking-wider animate-in fade-in slide-in-from-top-4 duration-200">
+            <div className="flex items-center gap-2">
+              <span className="bg-amber-600 text-white px-2 py-0.5 rounded-md text-[9px] font-mono leading-none font-extrabold">
+                {selectedIds.length} Selected
+              </span>
+              <span>Sovereign Bulk Action Center</span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => handleBulkAction('archive')}
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-amber-500 rounded border border-slate-700 text-[9px] font-bold cursor-pointer transition"
+              >
+                Bulk Archive
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkAction('restore')}
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 hover:text-emerald-500 rounded border border-slate-700 text-[9px] font-bold cursor-pointer transition"
+              >
+                Bulk Restore
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkAction('delete')}
+                className="px-3 py-1.5 bg-rose-950 hover:bg-rose-900 text-rose-200 rounded border border-rose-900 text-[9px] font-bold cursor-pointer transition"
+              >
+                Bulk Permanent Delete
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* LEDGERS DATA TABLE */}
         <div className="flex-1 overflow-x-auto border border-[#E5E7EB] rounded-2xl bg-white max-h-[385px] overflow-y-auto">
           <table className="w-full text-[11px] text-left border-collapse select-none leading-normal">
             <thead>
               <tr className="bg-slate-50 border-b border-[#E5E7EB] text-[9.5px] font-bold font-mono text-slate-450 uppercase select-none">
+                {isSuperAdmin && (
+                  <th className="p-3.5 pl-5 select-none w-10">
+                    <input 
+                      type="checkbox" 
+                      aria-label="Select all correspondence"
+                      checked={selectedIds.length === filteredItems.length && filteredItems.length > 0}
+                      onChange={toggleSelectAll}
+                      className="cursor-pointer"
+                    />
+                  </th>
+                )}
                 <th className="p-3.5 pl-5 select-none">Docket Ref No</th>
                 <th className="p-3.5 select-none">Subject Description</th>
                 <th className="p-3.5 select-none">Sender / Recipient</th>
@@ -451,17 +768,25 @@ export default function CorrespondenceWorkspace({
                 <th className="p-3.5 select-none">Direction</th>
                 <th className="p-3.5 select-none">Classification</th>
                 <th className="p-3.5 pr-5 select-none text-right">Workflow Status</th>
+                <th className="p-3.5 pr-5 select-none text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-20 text-center select-none text-slate-400">
+                  <td colSpan={isSuperAdmin ? 10 : 9} className="py-20 text-center select-none text-slate-400">
                     <div className="p-3 bg-slate-50 border border-slate-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3">
                       <Mail className="w-5 h-5 text-slate-400 animate-pulse" />
                     </div>
-                    <p className="font-extrabold text-xs text-slate-700 uppercase tracking-wider">No correspondence matches filters</p>
-                    <p className="text-[10px] text-slate-450 mt-1 font-semibold">Alter channel registers or seek other query descriptors.</p>
+                    <p className="font-extrabold text-xs text-slate-700 uppercase tracking-wider">No Records Found</p>
+                    <p className="text-[10px] text-slate-450 mt-1 font-semibold mb-4">Start by manually lodging dockets into our secure registry desk.</p>
+                    <button
+                      type="button"
+                      onClick={() => setIntakeModalOpen(true)}
+                      className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[10px] font-black uppercase rounded-lg shadow-xs cursor-pointer transition"
+                    >
+                      Create Record
+                    </button>
                   </td>
                 </tr>
               ) : (
@@ -475,6 +800,17 @@ export default function CorrespondenceWorkspace({
                     }}
                     className="hover:bg-[#FFF7ED] transition-all border-b border-slate-100 last:border-b-0 cursor-pointer group hover:border-l-4 hover:border-l-[#F59E0B]"
                   >
+                    {isSuperAdmin && (
+                      <td className="p-4 pl-5 align-middle w-10" onClick={(e) => e.stopPropagation()}>
+                        <input 
+                          type="checkbox" 
+                          aria-label={`Select correspondence row ${item.id}`}
+                          checked={selectedIds.includes(item.id)}
+                          onChange={() => toggleSelectOne(item.id)}
+                          className="cursor-pointer font-sans"
+                        />
+                      </td>
+                    )}
                     <td className="p-4 pl-5 group-hover:pl-4 font-mono font-bold text-slate-600 transition-all">
                       {item.refNo}
                     </td>
@@ -531,9 +867,57 @@ export default function CorrespondenceWorkspace({
                     </td>
 
                     <td className="p-4 pr-5 text-right">
-                      <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-705">
+                      <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-755">
                         {item.routingStatus}
                       </span>
+                    </td>
+
+                    <td className="p-4 pr-5 text-right font-semibold" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex gap-1.5 justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingItem(item);
+                            setEditForm({
+                              subject: item.subject,
+                              sender: item.sender,
+                              recipient: item.recipient,
+                              direction: item.direction,
+                              classification: item.classification,
+                              routingStatus: item.routingStatus
+                            });
+                            setEditModalOpen(true);
+                          }}
+                          className="px-2 py-1 bg-slate-100 text-slate-700 hover:bg-orange-50 hover:text-orange-700 rounded text-[9px] font-bold uppercase transition cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteItem(item.id)}
+                          className="px-2 py-1 bg-[#FEE2E2] text-[#EF4444] hover:bg-[#FCA5A5] rounded text-[9px] font-bold uppercase transition cursor-pointer"
+                        >
+                          Delete
+                        </button>
+                        {isSuperAdmin && item.routingStatus !== 'Archived' && (
+                          <button
+                            type="button"
+                            onClick={() => handleArchiveItem(item.id)}
+                            className="px-2 py-1 bg-amber-100 text-amber-700 hover:bg-amber-200 hover:text-amber-900 rounded text-[9px] font-bold uppercase transition cursor-pointer"
+                          >
+                            Archive
+                          </button>
+                        )}
+                        {isSuperAdmin && item.routingStatus === 'Archived' && (
+                          <button
+                            type="button"
+                            onClick={() => handleRestoreItem(item.id)}
+                            className="px-2 py-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 hover:text-emerald-900 rounded text-[9px] font-bold uppercase transition cursor-pointer"
+                          >
+                            Restore
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -862,6 +1246,113 @@ export default function CorrespondenceWorkspace({
               </button>
               <button type="submit" className="p-2.5 px-4 bg-[#F59E0B] hover:bg-[#D97706] text-white rounded-xl shadow-xs cursor-pointer">
                 Commit intake record
+              </button>
+            </div>
+
+          </form>
+        </div>
+      )}
+
+      {/* QUICK EDIT Modal dialogue */}
+      {editModalOpen && editingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-xs">
+          <form onSubmit={handleEditSubmit} className="bg-white border rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-200 text-left font-sans text-xs">
+            
+            <div className="flex items-center justify-between border-b pb-2 mb-2 leading-none">
+              <div className="text-left">
+                <h3 className="text-xs font-black uppercase tracking-wider text-amber-600 font-mono">Administrative Update Panel</h3>
+                <h4 className="text-sm font-extrabold text-[#0F172A] mt-0.5">EDIT CORRESPONDENCE LEDGER</h4>
+              </div>
+              <button type="button" onClick={() => setEditModalOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg text-slate-500 cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 font-sans text-left text-xs">
+              <div>
+                <label className="text-[9.5px] uppercase font-bold text-slate-400 font-mono block mb-1">Subject Description</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Aviation Hanger SOP"
+                  value={editForm.subject}
+                  onChange={(e) => setEditForm(p => ({ ...p, subject: e.target.value }))}
+                  className="w-full p-2 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9.5px] uppercase font-bold text-slate-400 font-mono block mb-1">Sender Entity</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Ministry of Aviation"
+                  value={editForm.sender}
+                  onChange={(e) => setEditForm(p => ({ ...p, sender: e.target.value }))}
+                  className="w-full p-2 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="text-[9.5px] uppercase font-bold text-slate-400 font-mono block mb-1">Recipient Entity</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Operations Registry"
+                  value={editForm.recipient}
+                  onChange={(e) => setEditForm(p => ({ ...p, recipient: e.target.value }))}
+                  className="w-full p-2 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-800"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-3.5">
+                <div>
+                  <label className="text-[9.5px] uppercase font-bold text-slate-400 font-mono block mb-1">Direction</label>
+                  <select
+                    value={editForm.direction}
+                    onChange={(e: any) => setEditForm(p => ({ ...p, direction: e.target.value }))}
+                    className="w-full p-2 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-800 cursor-pointer outline-hidden"
+                  >
+                    <option value="Incoming">Incoming Inbound</option>
+                    <option value="Outgoing">Outgoing Dispatch</option>
+                    <option value="Internal">Internal Circular</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[9.5px] uppercase font-bold text-slate-400 font-mono block mb-1">Classification Check</label>
+                  <select
+                    value={editForm.classification}
+                    onChange={(e: any) => setEditForm(p => ({ ...p, classification: e.target.value }))}
+                    className="w-full p-2 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-800 cursor-pointer outline-hidden"
+                  >
+                    <option value="Routine">Routine Regular</option>
+                    <option value="Confidential">Confidential Restricted</option>
+                    <option value="Urgent">Urgent priority</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[9.5px] uppercase font-bold text-slate-400 font-mono block mb-1">Workflow Status</label>
+                  <select
+                    value={editForm.routingStatus}
+                    onChange={(e: any) => setEditForm(p => ({ ...p, routingStatus: e.target.value }))}
+                    className="w-full p-2 bg-slate-50 border rounded-xl text-xs font-semibold text-slate-800 cursor-pointer outline-hidden"
+                  >
+                    <option value="Received">Received</option>
+                    <option value="Logged">Logged</option>
+                    <option value="Routing Assigned">Routing Assigned</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Archived">Archived</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 text-[10px] font-mono font-black pt-2 border-t uppercase">
+              <button type="button" onClick={() => setEditModalOpen(false)} className="p-2.5 px-4 bg-white hover:bg-slate-50 border rounded-xl text-slate-500 cursor-pointer">
+                Cancel
+              </button>
+              <button type="submit" className="p-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-xs cursor-pointer">
+                Commit Changes
               </button>
             </div>
 
